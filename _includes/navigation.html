@@ -1,0 +1,10 @@
+<nav class="flex items-center justify-between">
+  <a href="/" class="dark:hover:text-white dark:hover:underline {% if page.url == "/" %}dark:text-white dark:font-medium{% endif %}">Daniel's Blog</a>
+  <ul>
+    {% for item in site.data.navigation %}
+      <li>
+        <a href="{{ item.link }}" class="dark:hover:text-white dark:hover:underline {% if page.url == item.link %}dark:text-white dark:font-medium{% endif %}">{{ item.name }}</a>
+      </li>
+    {% endfor %}
+  </ul>
+</nav>

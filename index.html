@@ -1,0 +1,35 @@
+---
+layout: default
+title: "Daniel's Blog"
+---
+
+<img class="mt-8 w-24 h-24 rounded-full object-cover" src="{{
+"/assets/images/profile-pic.jpg" }}" />
+<h1>Hi, I'm Daniel.</h1>
+<p>
+  I'm a Software Developer based in Vienna. I work as a Full Stack Developer
+  mostly with React (TypeScript) on our Frontend Web App and Elixir (Phoenix) on
+  our Backend.
+</p>
+<hr />
+<h2>Newest Articles</h2>
+<section class="not-prose pb-16">
+  <ul class="list-none">
+    {% for post in site.posts limit: 2 %}
+    <li>
+      <a
+        class="flex items-center justify-between -ml-4 -mr-4 py-2 px-4 group hover:bg-slate-800 rounded"
+        href="{{ post.url }}"
+      >
+        <span class="flex flex-col">
+          <time class="dark:text-slate-400 text-sm"
+            >{{ post.date | date_to_string }}</time
+          >
+          <h3 class="m-0 group-hover:text-white">{{ post.title }}</h3>
+        </span>
+        <span> asdf </span>
+      </a>
+    </li>
+    {% endfor %}
+  </ul>
+</section>
