@@ -3,8 +3,8 @@ layout: default
 title: Daniel's Blog
 ---
 
-<img class="mt-8 w-24 h-24 rounded-full object-cover" src="{{
-"/assets/images/profile-pic.jpg" }}" />
+<img class="mt-8 w-24 h-24 rounded-full object-cover" alt="Profile picture of
+me" src="{{ "/assets/images/profile-pic-xs.jpg" }}" />
 <h1>Hi, I'm Daniel.</h1>
 <p>
   I'm a Software Developer based in Vienna. At my current job I am working as a
@@ -15,7 +15,12 @@ title: Daniel's Blog
 <section class="flex items-center not-prose">
   {% for item in site.data.sociallinks %}
   <span class="flex items-center mr-4">
-    <img src="/assets/images/{{ item.icon }}.svg" height="20" width="20" />
+    <img
+      src="/assets/images/{{ item.icon }}.svg"
+      alt="Social icon {{ item.icon }}"
+      height="20"
+      width="20"
+    />
     <a
       href="{{ item.link }}"
       class="ml-2 text-sm no-underline hover:underline"
