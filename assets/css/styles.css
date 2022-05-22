@@ -8,3 +8,19 @@
 pre code.hljs {
   padding: 0;
 }
+
+.prose :where(code):not(:where([class~="not-prose"] *))::after {
+  content: none;
+}
+
+.prose :where(code):not(:where([class~="not-prose"] *))::before {
+  content: none;
+}
+
+.prose :where(code):not(:where([class~="not-prose"] *)) {
+  background-color: #070B15;
+  border-radius: 2px;
+  font-size: 0.85rem;
+  font-weight: 400;
+  padding: 0.1rem 0.3rem;
+}

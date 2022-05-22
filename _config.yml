@@ -1,6 +1,9 @@
-url: '' # the base hostname & protocol for your site, e.g. http://example.com
-baseurl: '' # the subpath of your site, e.g. /blog
-title: '' # the name of your site, e.g. ACME Corp.
+domain: eisnstein.github.io
+url: 'https://eisnstein.github.io' # the base hostname & protocol for your site, e.g. http://example.com
+baseurl: '/' # the subpath of your site, e.g. /blog
+title: "Daniel's Blog" # the name of your site, e.g. ACME Corp.
+
+permalink: /:categories/:year/:month/:day/:title
 
 plugins:
   - jekyll-postcss-v2

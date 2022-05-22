@@ -1,0 +1,11 @@
+- name: GitHub
+  link: https://github.com/eisnstein
+  icon: github
+
+- name: Twitter
+  link: https://twitter.com/eisnstein
+  icon: twitter
+
+- name: LinkedIn
+  link: https://linkedin.com/in/danielhoeflehner
+  icon: linkedin
