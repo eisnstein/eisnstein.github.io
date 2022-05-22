@@ -1,6 +1,6 @@
 {
-    "name": "",
-    "short_name": "",
+    "name": "Daniel's Blog",
+    "short_name": "Daniel's Blog",
     "icons": [
         {
             "src": "/android-chrome-192x192.png",
@@ -13,7 +13,7 @@
             "type": "image/png"
         }
     ],
-    "theme_color": "#ffffff",
-    "background_color": "#ffffff",
+    "theme_color": "#072344",
+    "background_color": "#072344",
     "display": "standalone"
 }
