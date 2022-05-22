@@ -1,8 +1,8 @@
 ---
 layout: post
-author: Daniel Höflehner
 tags: csharp
 slug: pattern-matching-in-csharp
+description: How to use pattern matching in C#. A closer look at what is possible in C# 11.
 ---
 
 Because I'm programming a lot in Elixir, I am used to the concept of pattern matching. It has become so convenient, that I sometimes miss it in other languages. The more it makes me happy every time new pattern matching capabilities are coming to C#. Pattern matching is part of C# since version 7.0 and has evolved since then.

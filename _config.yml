@@ -1,12 +1,28 @@
 domain: eisnstein.github.io
 url: 'https://eisnstein.github.io' # the base hostname & protocol for your site, e.g. http://example.com
 baseurl: '/' # the subpath of your site, e.g. /blog
-title: "Daniel's Blog" # the name of your site, e.g. ACME Corp.
+author: Daniel
+
+title: "Daniel's Blog"
+tagline: 'Writing about programming'
+description: 'Personal Blog of Daniel, writing about programming mostly in C#, Rust, TypeScript and Elixir.'
+
+twitter:
+  username: eisnstein
+  card: summary
+
+social:
+  name: Daniel Höflehner
+  links:
+    - https://twitter.com/eisnstein
+    - https://github.com/eisnstein
+    - https://linkedin.com/in/danielhoeflehner
 
 permalink: /:categories/:year/:month/:day/:title
 
 plugins:
   - jekyll-postcss-v2
+  - jekyll-seo-tag
 
 postcss:
   cache: false
