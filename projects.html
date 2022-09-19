@@ -1,0 +1,48 @@
+---
+layout: default
+title: Projects
+---
+
+<h1>Projects</h1>
+<p>Some of my projects. (Ok, right now only one).</p>
+<hr />
+<article>
+  <h2>PackCheck</h2>
+  <div class="flex gap-x-4 not-prose">
+    <a href="https://nuget.org/packages/PackCheck" target="_blank"
+      ><img src="https://img.shields.io/nuget/vpre/PackCheck"
+    /></a>
+  </div>
+  <p>
+    <a href="https://www.nuget.org/packages/PackCheck" target="_blank"
+      >PackCheck</a
+    >
+    is a dotnet tool for checking and upgrading versions of
+    <a href="https://nuget.org" target="_blank">NuGet</a> packages. For NodeJS
+    projects I like to use
+    <a href="https://www.npmjs.com/package/npm-check-updates" target="_blank"
+      >npm-check-updates</a
+    >
+    and not the built in npm update command. But why? Simple. I want to directly
+    see in the package.json file which versions are installed. NCU does exactly
+    that, it changes the versions in the package.json file.
+  </p>
+  <p>
+    When I started to learn C# I was searching for something similar over at
+    <a href="https://www.nuget.org/" target="_blank">nuget.org</a> but could not
+    find anything. So I thought building such a
+    <a
+      href="https://learn.microsoft.com/en-us/dotnet/core/tools/global-tools-how-to-create"
+      >dotnet tool</a
+    >
+    would be a nice way for exploring C#. After I built
+    <a href="https://www.nuget.org/packages/PackCheck" target="_blank"
+      >PackCheck</a
+    >
+    and published it to NuGet I found out about the
+    <a href="https://www.nuget.org/packages/dotnet-outdated-tool"
+      >dotnet-outdated-tool</a
+    >
+    🤪.
+  </p>
+</article>

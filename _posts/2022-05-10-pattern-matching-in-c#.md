@@ -217,7 +217,7 @@ With this type of pattern matching we can check/match against properties or fiel
 
 ```csharp
 string fullTitle = "Title: This is the title";
-string title = GetSubStr(fullTitle);
+string title = GetTitle(fullTitle);
 Console.WriteLine(title);
 //> This is the title
 
@@ -248,7 +248,7 @@ record Person(string Name, Address Address);
 
 A few things to mention regarding the preceding code examples. In the first example in the first **switch expression arm**, the input is matched against `string { Length: >= 7 } s => ...`. Two things are happening here. First, the incoming string value is checked to be at least 7 characters long and second, is then assigned to a new local variable `s`. This is actually the **var pattern**, which is useful if you need to create a temporary var for future use. In that case it is not really needed, but I showed it here for demonstration purposes.
 
-In the second example with the **Person** record, we can see how nested property matching works. I think important to mention is, that when matching an object against a pattern, not the whole object needs to match, only those part of the pattern. In that case `Address.City: "Vienna"`. Imaging the **me** object to look like that:
+In the second example with the **Person** record, we can see how nested property matching works. I think important to mention is, that when matching an object against a pattern, not the whole object needs to match, only those parts of the pattern. In that case `Address.City: "Vienna"`. Imaging the **me** object to look like that:
 
 ```
 {
