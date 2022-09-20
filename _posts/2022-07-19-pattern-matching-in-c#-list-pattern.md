@@ -9,17 +9,46 @@ description: How to use list pattern matching in C#.
 In my last post I wrote about [pattern matching in C#]({% post_url 2022-05-10-pattern-matching-in-c# %}). One type of pattern matching I left out was the _list pattern matching_. I think this is a very handy and powerful one.
 
 ```csharp
+var emptyList = Array.Empty<int>();
+string msg = SwitchNumberList(emptyList);
+Console.WriteLine(msg);
+//> empty list
+
+int[] twoNumbers = {1, 2};
+msg = SwitchNumberList(twoNumbers);
+Console.WriteLine(msg);
+//> a list with two number: 1, 2
+
 int[] numbers = {1, 2, 3, 4, 5, 6, 7};
-string msg = ExploreNumberList(numbers);
+msg = SwitchNumberList(numbers);
 Console.WriteLine(msg);
 //> first item discarded, 6 numbers left
 
-string ExploreNumberList(int[] numbers)
+string SwitchNumberList(int[] numbers)
   => numbers switch
   {
     [] => "empty list",
-    [var first, var second] => $"a list with two numbers: {first}, {second}",
-    [_head, ..int[] tail] => $"first item discarded, {tail.Length} numbers left",
+    [var first, var second] => $"list with 2 numbers: {first}, {second}",
+    [_, ..int[] tail] => $"first ignored, {tail.Length} numbers left",
+    _ => "fallback arm if nothing else matched"
+  };
+```
+
+In the preceding code we can see, that we can match against various list patterns. First there is the empty list `[]`. The second arm matches, if the list has exactly 2 numbers in it. Those 2 numbers will be captured by the `first` and `second` variables.
+The next pattern is more interesting. First, it _ignores_ the first element with the _discard_ pattern `_`. This is a nice way to avoid _unused_ variables. Second, we capture the rest of the list in a new array `tail`. If you take a look at the [generated C# code](https://sharplab.io/#v2:EYLgtghglgdgNAExAagD4AECMAGABAZQHcoAXAYwAsA5AVzGAFMAnAGSgGcSAKWEgbQC6uGHUZN2ASgCwAKFzzcAXgB8w0c3a52xchVkLcAb30GFgpaoBEDMAAcSAT1wAbDiUtwTp3HwBuEJlwAMyhxEjhcf0D2BjIAexgEIRVcABJLV05cHQpcACZcUht2ECMQsIBfCMMY+MSKjy9TPgB9CIA6dt5zEmhnZNV08qyoAHMYOKYGBGreqGd2lgYYUZIKCrV6DRcGIPdPOW9cFotcSyCIZ2dgCDIAa1wAsEKg4Ti12FHcSF1pyyaKgBuIA){:target="\_blank" rel="noopener noreferrer"} of the `SwitchNumberList` function you will find a line which starts with `int[] subArray = ...`. This is the place, where the `tail` gets created.
+
+```csharp
+List<string> words = {"this", "is", "an", "example", "text" };
+msg = SwitchStringList(words);
+Console.WriteLine(msg);
+//>
+
+string SwitchStringList(List<string> words)
+  => words switch
+  {
+    [] => "empty list",
+    [var first, var second] => $"list with 2 numbers: {first}, {second}",
+    [_, ..int[] tail] => $"first ignored, {tail.Length} numbers left",
     _ => "fallback arm if nothing else matched"
   };
 ```

@@ -260,4 +260,4 @@ In the second example with the **Person** record, we can see how nested property
 }
 ```
 
-Ok, that is a lot of pattern matching. But there is even more, which I have not covered here. For more details and more in-depth explanations I recommend you check out the documentation over at [docs.microsoft.com](https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/operators/patterns).
+Ok, that is a lot of pattern matching. But there is even more, which I have not covered here. For more details and more in-depth explanations I recommend you check out the documentation over at [docs.microsoft.com](https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/operators/patterns){:target="\_blank" rel="noopener noreferrer"}.
