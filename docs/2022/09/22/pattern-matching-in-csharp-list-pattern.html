@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#072344" />
+    <meta
+      name="keywords"
+      content="blog, programming, functional, tutorials, csharp, rust, typescript, elixir"
+    />
+    <!-- Begin Jekyll SEO tag v2.8.0 -->
+<title>Pattern Matching In C# - List Patterns | Daniel’s Blog</title>
+<meta name="generator" content="Jekyll v4.2.2" />
+<meta property="og:title" content="Pattern Matching In C# - List Patterns" />
+<meta name="author" content="Daniel" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="How to use list pattern matching in C#." />
+<meta property="og:description" content="How to use list pattern matching in C#." />
+<link rel="canonical" href="https://eisnstein.github.io/2022/09/22/pattern-matching-in-csharp-list-pattern" />
+<meta property="og:url" content="https://eisnstein.github.io/2022/09/22/pattern-matching-in-csharp-list-pattern" />
+<meta property="og:site_name" content="Daniel’s Blog" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2022-09-22T00:00:00+02:00" />
+<meta name="twitter:card" content="summary" />
+<meta property="twitter:title" content="Pattern Matching In C# - List Patterns" />
+<meta name="twitter:site" content="@eisnstein" />
+<meta name="twitter:creator" content="@Daniel" />
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Daniel"},"dateModified":"2022-09-22T00:00:00+02:00","datePublished":"2022-09-22T00:00:00+02:00","description":"How to use list pattern matching in C#.","headline":"Pattern Matching In C# - List Patterns","mainEntityOfPage":{"@type":"WebPage","@id":"https://eisnstein.github.io/2022/09/22/pattern-matching-in-csharp-list-pattern"},"url":"https://eisnstein.github.io/2022/09/22/pattern-matching-in-csharp-list-pattern"}</script>
+<!-- End Jekyll SEO tag -->
+
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="32x32"
+      href="/assets/images/favicon-32x32.png"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="16x16"
+      href="/assets/images/favicon-16x16.png"
+    />
+    <link rel="manifest" href="/site.webmanifest" />
+    <link rel="preconnect" href="https://fonts.bunny.net" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.bunny.net/css?family=inter:300,400,500,700&display=swap"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.1/styles/github-dark.min.css"
+    />
+    <link rel="stylesheet" href="/assets/css/styles.css" />
+  </head>
+  <body
+    class="min-h-screen antialiased text-slate-500 dark:text-slate-400 bg-white dark:bg-slate-900"
+  >
+    <header class="py-6 px-2 md:px-0 max-w-prose mx-auto lg:prose-lg">
+      <nav class="flex items-center justify-between">
+  <a href="/" class="dark:hover:text-white dark:hover:underline ">Daniel's Blog</a>
+  <ul class="flex gap-x-4">
+    
+      <li>
+        <a href="/posts" class="dark:hover:text-white dark:hover:underline ">Posts</a>
+      </li>
+    
+      <li>
+        <a href="/projects" class="dark:hover:text-white dark:hover:underline ">Projects</a>
+      </li>
+    
+  </ul>
+</nav>
+    </header>
+    <main
+      class="mt-8 px-2 md:px-0 prose prose-slate dark:prose-invert mx-auto lg:prose-lg"
+    >
+      <article>
+  <time class="dark:text-slate-400 text-sm"
+    >22 Sep 2022</time
+  >
+  <h1>Pattern Matching In C# - List Patterns</h1>
+  <div class="mb-3">
+    
+    <span
+      class="ml-1 inline-block align-middle rounded-full px-2 bg-slate-300 text-sm text-slate-700"
+      >csharp</span
+    >
+    
+  </div>
+  <p>In my last post I wrote about <a href="/2022/05/10/pattern-matching-in-csharp">pattern matching in C#</a>. One type of pattern matching I left out was the <em>list pattern matching</em>. I think this is a very handy and powerful one.</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">var</span> <span class="n">emptyList</span> <span class="p">=</span> <span class="n">Array</span><span class="p">.</span><span class="n">Empty</span><span class="p">&lt;</span><span class="kt">int</span><span class="p">&gt;();</span>
+<span class="kt">string</span> <span class="n">msg</span> <span class="p">=</span> <span class="nf">SwitchNumberList</span><span class="p">(</span><span class="n">emptyList</span><span class="p">);</span>
+<span class="n">Console</span><span class="p">.</span><span class="nf">WriteLine</span><span class="p">(</span><span class="n">msg</span><span class="p">);</span>
+<span class="c1">//&gt; empty list</span>
+
+<span class="kt">int</span><span class="p">[]</span> <span class="n">twoNumbers</span> <span class="p">=</span> <span class="p">{</span> <span class="m">1</span><span class="p">,</span> <span class="m">2</span> <span class="p">};</span>
+<span class="n">msg</span> <span class="p">=</span> <span class="nf">SwitchNumberList</span><span class="p">(</span><span class="n">twoNumbers</span><span class="p">);</span>
+<span class="n">Console</span><span class="p">.</span><span class="nf">WriteLine</span><span class="p">(</span><span class="n">msg</span><span class="p">);</span>
+<span class="c1">//&gt; a list with two numbers: 1, 2</span>
+
+<span class="kt">int</span><span class="p">[]</span> <span class="n">numbers</span> <span class="p">=</span> <span class="p">{</span> <span class="m">1</span><span class="p">,</span> <span class="m">2</span><span class="p">,</span> <span class="m">3</span><span class="p">,</span> <span class="m">4</span><span class="p">,</span> <span class="m">5</span><span class="p">,</span> <span class="m">6</span><span class="p">,</span> <span class="m">7</span> <span class="p">};</span>
+<span class="n">msg</span> <span class="p">=</span> <span class="nf">SwitchNumberList</span><span class="p">(</span><span class="n">numbers</span><span class="p">);</span>
+<span class="n">Console</span><span class="p">.</span><span class="nf">WriteLine</span><span class="p">(</span><span class="n">msg</span><span class="p">);</span>
+<span class="c1">//&gt; first item discarded, 6 numbers left</span>
+
+<span class="kt">string</span> <span class="nf">SwitchNumberList</span><span class="p">(</span><span class="kt">int</span><span class="p">[]</span> <span class="n">numbers</span><span class="p">)</span>
+  <span class="p">=&gt;</span> <span class="n">numbers</span> <span class="k">switch</span>
+  <span class="p">{</span>
+    <span class="p">[]</span> <span class="p">=&gt;</span> <span class="s">"empty list"</span><span class="p">,</span>
+    <span class="p">[</span><span class="kt">var</span> <span class="n">first</span><span class="p">,</span> <span class="kt">var</span> <span class="n">second</span><span class="p">]</span> <span class="p">=&gt;</span> <span class="s">$"list with 2 numbers: </span><span class="p">{</span><span class="n">first</span><span class="p">}</span><span class="s">, </span><span class="p">{</span><span class="n">second</span><span class="p">}</span><span class="s">"</span><span class="p">,</span>
+    <span class="p">[</span><span class="n">_</span><span class="p">,</span> <span class="p">..</span><span class="kt">int</span><span class="p">[]</span> <span class="n">tail</span><span class="p">]</span> <span class="p">=&gt;</span> <span class="s">$"first ignored, </span><span class="p">{</span><span class="n">tail</span><span class="p">.</span><span class="n">Length</span><span class="p">}</span><span class="s"> numbers left"</span><span class="p">,</span>
+    <span class="n">_</span> <span class="p">=&gt;</span> <span class="s">"fallback arm if nothing else matched"</span>
+  <span class="p">};</span>
+</code></pre></div></div>
+
+<p>In the preceding code we can see, that we can match against various list patterns. First there is the empty list <code class="language-plaintext highlighter-rouge">[]</code>. The second arm matches, if the list has exactly 2 numbers in it. Those 2 numbers will be captured by the <code class="language-plaintext highlighter-rouge">first</code> and <code class="language-plaintext highlighter-rouge">second</code> variables.
+The next pattern is more interesting. First, it <em>ignores</em> the first element with the <em>discard</em> pattern <code class="language-plaintext highlighter-rouge">_</code>. This is a nice way to avoid <em>unused</em> variables. Second, we capture the rest of the list in a new array <code class="language-plaintext highlighter-rouge">tail</code>. If you take a look at the <a href="https://sharplab.io/#v2:EYLgtghglgdgNAExAagD4AECMAGABAZQHcoAXAYwAsA5AVzGAFMAnAGSgGcSAKWEgbQC6uGHUZN2ASgCwAKFzzcAXgB8w0c3a52xchVkLcAb30GFgpaoBEDMAAcSAT1wAbDiUtwTp3HwBuEJlwAMyhxEjhcf0D2BjIAexgEIRVcABJLV05cHQpcACZcUht2ECMQsIBfCMMY+MSKjy9TPgB9CIA6dt5zEmhnZNV08qyoAHMYOKYGBGreqGd2lgYYUZIKCrV6DRcGIPdPOW9cFotcSyCIZ2dgCDIAa1wAsEKg4Ti12FHcSF1pyyaKgBuIA" target="\_blank" rel="noopener noreferrer">generated C# code</a> of the <code class="language-plaintext highlighter-rouge">SwitchNumberList</code> function you will find a line which starts with <code class="language-plaintext highlighter-rouge">int[] subArray = ...</code>. This is the place, where the <code class="language-plaintext highlighter-rouge">tail</code> gets created (the remaining numbers get copied into the new array).</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">List</span><span class="p">&lt;</span><span class="kt">string</span><span class="p">&gt;</span> <span class="n">words</span> <span class="p">=</span> <span class="k">new</span><span class="p">()</span> <span class="p">{</span> <span class="s">"this"</span><span class="p">,</span> <span class="s">"is"</span><span class="p">,</span> <span class="s">"an"</span><span class="p">,</span> <span class="s">"example"</span><span class="p">,</span> <span class="s">"text"</span> <span class="p">};</span>
+<span class="kt">string</span> <span class="n">msg</span> <span class="p">=</span> <span class="nf">SwitchStringList</span><span class="p">(</span><span class="n">words</span><span class="p">);</span>
+<span class="n">Console</span><span class="p">.</span><span class="nf">WriteLine</span><span class="p">(</span><span class="n">msg</span><span class="p">);</span>
+<span class="c1">//&gt; this text</span>
+
+<span class="kt">string</span> <span class="nf">SwitchStringList</span><span class="p">(</span><span class="n">IReadOnlyList</span><span class="p">&lt;</span><span class="kt">string</span><span class="p">&gt;</span> <span class="n">words</span><span class="p">)</span>
+  <span class="p">=&gt;</span> <span class="n">words</span> <span class="k">switch</span>
+  <span class="p">{</span>
+    <span class="p">[</span><span class="kt">var</span> <span class="n">first</span><span class="p">,</span> <span class="p">..,</span> <span class="kt">var</span> <span class="n">last</span><span class="p">]</span> <span class="p">=&gt;</span> <span class="s">$"</span><span class="p">{</span><span class="n">first</span><span class="p">}</span><span class="s"> </span><span class="p">{</span><span class="n">last</span><span class="p">}</span><span class="s">"</span><span class="p">,</span>
+    <span class="n">_</span> <span class="p">=&gt;</span> <span class="s">"the list has less than two elements"</span>
+  <span class="p">};</span>
+</code></pre></div></div>
+
+<p>List pattern matching also works on lists. In the example above we match a list of strings against this pattern <code class="language-plaintext highlighter-rouge">[var first, .., var last]</code>. Interesting here is the <code class="language-plaintext highlighter-rouge">..</code>. This is the <em>range pattern</em> and matches zero or more elements. That means, that, if the list would look like that <code class="language-plaintext highlighter-rouge">{ "one", "two" }</code>, the returned message would be <code class="language-plaintext highlighter-rouge">"one two"</code>.</p>
+
+<p>Ok, so here is the thing. In Elixir you can match on a string like that:</p>
+
+<div class="language-elixir highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">auth_header</span> <span class="o">=</span> <span class="s2">"Bearer this-is-the-auth-token"</span>
+
+<span class="n">result</span> <span class="o">=</span>
+  <span class="k">case</span> <span class="n">auth_header</span> <span class="k">do</span>
+    <span class="s2">"Bearer "</span> <span class="o">&lt;&gt;</span> <span class="n">token</span> <span class="o">-&gt;</span> <span class="p">{</span><span class="ss">:ok</span><span class="p">,</span> <span class="n">token</span><span class="p">}</span>
+    <span class="n">_</span> <span class="o">-&gt;</span> <span class="p">{</span><span class="ss">:error</span><span class="p">,</span> <span class="s2">"invalid auth header"</span><span class="p">}</span>
+  <span class="k">end</span>
+</code></pre></div></div>
+
+<p>The <code class="language-plaintext highlighter-rouge">&lt;&gt;</code> operator in <a href="https://elixir-lang.org/" target="\_blank" rel="noopener noreferrer">Elixir</a> is basically the <code class="language-plaintext highlighter-rouge">+</code> from C#. I like this way of checking for a pattern in a string (just keep in mind, that this only works when the <em>static</em> string is at the begining of the pattern). Good, enough of Elixir. What I was wondering, could we do something like that in C#? Yes, more or less. I came up with the following solution:</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">string</span> <span class="n">authHeaderValue</span> <span class="p">=</span> <span class="s">"Bearer this-is-the-auth-token"</span><span class="p">;</span>
+<span class="kt">string</span> <span class="n">token</span> <span class="p">=</span> <span class="nf">GetToken</span><span class="p">(</span><span class="n">authHeaderValue</span><span class="p">);</span>
+<span class="n">Console</span><span class="p">.</span><span class="nf">WriteLine</span><span class="p">(</span><span class="n">token</span><span class="p">);</span>
+<span class="c1">//&gt; this-is-the-auth-token</span>
+
+<span class="kt">string</span> <span class="nf">GetToken</span><span class="p">(</span><span class="kt">string</span> <span class="n">authHeader</span><span class="p">)</span>
+  <span class="p">=&gt;</span> <span class="n">authHeader</span><span class="p">.</span><span class="nf">Split</span><span class="p">(</span><span class="s">" "</span><span class="p">)</span> <span class="k">switch</span>
+  <span class="p">{</span>
+    <span class="p">[</span><span class="s">"Bearer"</span><span class="p">,</span> <span class="kt">var</span> <span class="n">token</span><span class="p">]</span> <span class="p">=&gt;</span> <span class="n">token</span><span class="p">.</span><span class="nf">Trim</span><span class="p">(),</span>
+    <span class="n">_</span> <span class="p">=&gt;</span> <span class="k">throw</span> <span class="k">new</span> <span class="nf">Exception</span><span class="p">(</span><span class="s">"Invalid authorization header"</span><span class="p">)</span>
+  <span class="p">};</span>
+</code></pre></div></div>
+
+<p>It also possible to pattern match a list with the <code class="language-plaintext highlighter-rouge">is</code> operator.</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">List</span><span class="p">&lt;</span><span class="kt">int</span><span class="p">&gt;</span> <span class="n">numbers</span> <span class="p">=</span> <span class="k">new</span><span class="p">()</span> <span class="p">{</span> <span class="m">1</span><span class="p">,</span> <span class="m">2</span> <span class="p">};</span>
+<span class="k">if</span> <span class="p">(</span><span class="n">numbers</span> <span class="k">is</span> <span class="p">[</span><span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">])</span>
+<span class="p">{</span>
+  <span class="c1">// do something when the list has exactly 2 elements</span>
+<span class="p">}</span>
+
+<span class="n">numbers</span> <span class="p">=</span> <span class="k">new</span><span class="p">()</span> <span class="p">{</span> <span class="m">1</span><span class="p">,</span> <span class="m">2</span><span class="p">,</span> <span class="m">3</span><span class="p">,</span> <span class="m">4</span><span class="p">,</span> <span class="m">5</span> <span class="p">};</span>
+<span class="k">if</span> <span class="p">(</span><span class="n">numbers</span> <span class="k">is</span> <span class="p">[</span><span class="m">1</span><span class="p">,</span> <span class="p">..,</span> <span class="m">5</span><span class="p">])</span>
+<span class="p">{</span>
+  <span class="c1">// do something when the list starts with 1 and ends with 5</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>With this approach the auth token example from above could look like this:</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">string</span> <span class="n">authHeaderValue</span> <span class="p">=</span> <span class="s">"Bearer this-is-the-auth-token"</span><span class="p">;</span>
+<span class="k">if</span> <span class="p">(</span><span class="n">authHeaderValue</span><span class="p">.</span><span class="nf">Split</span><span class="p">(</span><span class="s">" "</span><span class="p">)</span> <span class="k">is</span> <span class="p">[</span><span class="s">"Bearer"</span><span class="p">,</span> <span class="kt">var</span> <span class="n">token</span><span class="p">])</span>
+<span class="p">{</span>
+  <span class="n">Console</span><span class="p">.</span><span class="nf">WriteLine</span><span class="p">(</span><span class="n">token</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="c1">//&gt; this-is-the-auth-token</span>
+</code></pre></div></div>
+
+<p>How nice is that?</p>
+
+<p>As last time I recommend you take a look at the <a href="https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/operators/patterns#list-patterns" target="\_blank" rel="noopener noreferrer">C# documentation</a>. There they show an example where they parse some bank transaction data from a CSV file. Depending on the type of each transaction a different arm matches. I think this looks so clean and readable and is a great example, why list pattern matching is awesome.</p>
+
+</article>
+
+    </main>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.1/highlight.min.js"></script>
+    <script>
+      hljs.highlightAll()
+    </script>
+  </body>
+</html>

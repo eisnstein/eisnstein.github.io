@@ -65,13 +65,13 @@ result =
   end
 ```
 
-The `<>` operator in Elixir is basically the `+` from C#. I like this way of checking for a pattern in a string (just keep in mind, that this only works when the _static_ string is at the begining of the pattern). Good, enough of Elixir. What I was wondering, could we do something like that in C#? Yes, more or less. I came up with the following solution:
+The `<>` operator in [Elixir](https://elixir-lang.org/){:target="\_blank" rel="noopener noreferrer"} is basically the `+` from C#. I like this way of checking for a pattern in a string (just keep in mind, that this only works when the _static_ string is at the begining of the pattern). Good, enough of Elixir. What I was wondering, could we do something like that in C#? Yes, more or less. I came up with the following solution:
 
 ```csharp
 string authHeaderValue = "Bearer this-is-the-auth-token";
 string token = GetToken(authHeaderValue);
 Console.WriteLine(token);
-//> this text
+//> this-is-the-auth-token
 
 string GetToken(string authHeader)
   => authHeader.Split(" ") switch
@@ -80,3 +80,35 @@ string GetToken(string authHeader)
     _ => throw new Exception("Invalid authorization header")
   };
 ```
+
+It also possible to pattern match a list with the `is` operator.
+
+```csharp
+List<int> numbers = new() { 1, 2 };
+if (numbers is [_, _])
+{
+  // do something when the list has exactly 2 elements
+}
+
+numbers = new() { 1, 2, 3, 4, 5 };
+if (numbers is [1, .., 5])
+{
+  // do something when the list starts with 1 and ends with 5
+}
+```
+
+With this approach the auth token example from above could look like this:
+
+```csharp
+string authHeaderValue = "Bearer this-is-the-auth-token";
+if (authHeaderValue.Split(" ") is ["Bearer", var token])
+{
+  Console.WriteLine(token);
+}
+
+//> this-is-the-auth-token
+```
+
+How nice is that?
+
+As last time I recommend you take a look at the [C# documentation](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/operators/patterns#list-patterns){:target="\_blank" rel="noopener noreferrer"}. There they show an example where they parse some bank transaction data from a CSV file. Depending on the type of each transaction a different arm matches. I think this looks so clean and readable and is a great example, why list pattern matching is awesome.

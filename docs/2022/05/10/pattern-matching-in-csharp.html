@@ -42,12 +42,10 @@
       href="/assets/images/favicon-16x16.png"
     />
     <link rel="manifest" href="/site.webmanifest" />
-
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="preconnect" href="https://fonts.bunny.net" crossorigin />
     <link
       rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;700&display=swap"
+      href="https://fonts.bunny.net/css?family=inter:300,400,500,700&display=swap"
     />
     <link
       rel="stylesheet"
@@ -61,10 +59,14 @@
     <header class="py-6 px-2 md:px-0 max-w-prose mx-auto lg:prose-lg">
       <nav class="flex items-center justify-between">
   <a href="/" class="dark:hover:text-white dark:hover:underline ">Daniel's Blog</a>
-  <ul>
+  <ul class="flex gap-x-4">
     
       <li>
         <a href="/posts" class="dark:hover:text-white dark:hover:underline ">Posts</a>
+      </li>
+    
+      <li>
+        <a href="/projects" class="dark:hover:text-white dark:hover:underline ">Projects</a>
       </li>
     
   </ul>
@@ -290,7 +292,7 @@
 <p>With this type of pattern matching we can check/match against properties or fields of objects. Even nested property matching is possible. And again we can use relational operators.</p>
 
 <div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">string</span> <span class="n">fullTitle</span> <span class="p">=</span> <span class="s">"Title: This is the title"</span><span class="p">;</span>
-<span class="kt">string</span> <span class="n">title</span> <span class="p">=</span> <span class="nf">GetSubStr</span><span class="p">(</span><span class="n">fullTitle</span><span class="p">);</span>
+<span class="kt">string</span> <span class="n">title</span> <span class="p">=</span> <span class="nf">GetTitle</span><span class="p">(</span><span class="n">fullTitle</span><span class="p">);</span>
 <span class="n">Console</span><span class="p">.</span><span class="nf">WriteLine</span><span class="p">(</span><span class="n">title</span><span class="p">);</span>
 <span class="c1">//&gt; This is the title</span>
 
@@ -321,7 +323,7 @@
 
 <p>A few things to mention regarding the preceding code examples. In the first example in the first <strong>switch expression arm</strong>, the input is matched against <code class="language-plaintext highlighter-rouge">string { Length: &gt;= 7 } s =&gt; ...</code>. Two things are happening here. First, the incoming string value is checked to be at least 7 characters long and second, is then assigned to a new local variable <code class="language-plaintext highlighter-rouge">s</code>. This is actually the <strong>var pattern</strong>, which is useful if you need to create a temporary var for future use. In that case it is not really needed, but I showed it here for demonstration purposes.</p>
 
-<p>In the second example with the <strong>Person</strong> record, we can see how nested property matching works. I think important to mention is, that when matching an object against a pattern, not the whole object needs to match, only those part of the pattern. In that case <code class="language-plaintext highlighter-rouge">Address.City: "Vienna"</code>. Imaging the <strong>me</strong> object to look like that:</p>
+<p>In the second example with the <strong>Person</strong> record, we can see how nested property matching works. I think important to mention is, that when matching an object against a pattern, not the whole object needs to match, only those parts of the pattern. In that case <code class="language-plaintext highlighter-rouge">Address.City: "Vienna"</code>. Imaging the <strong>me</strong> object to look like that:</p>
 
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>{
   Name: "Me",
@@ -332,7 +334,7 @@
 }
 </code></pre></div></div>
 
-<p>Ok, that is a lot of pattern matching. But there is even more, which I have not covered here. For more details and more in-depth explanations I recommend you check out the documentation over at <a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/operators/patterns">docs.microsoft.com</a>.</p>
+<p>Ok, that is a lot of pattern matching. But there is even more, which I have not covered here. For more details and more in-depth explanations I recommend you check out the documentation over at <a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/operators/patterns" target="\_blank" rel="noopener noreferrer">docs.microsoft.com</a>.</p>
 
 </article>
 

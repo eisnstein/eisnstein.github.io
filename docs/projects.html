@@ -9,23 +9,23 @@
       content="blog, programming, functional, tutorials, csharp, rust, typescript, elixir"
     />
     <!-- Begin Jekyll SEO tag v2.8.0 -->
-<title>Posts | Daniel’s Blog</title>
+<title>Projects | Daniel’s Blog</title>
 <meta name="generator" content="Jekyll v4.2.2" />
-<meta property="og:title" content="Posts" />
+<meta property="og:title" content="Projects" />
 <meta name="author" content="Daniel" />
 <meta property="og:locale" content="en_US" />
 <meta name="description" content="Personal Blog of Daniel, writing about programming mostly in C#, Rust, TypeScript and Elixir." />
 <meta property="og:description" content="Personal Blog of Daniel, writing about programming mostly in C#, Rust, TypeScript and Elixir." />
-<link rel="canonical" href="https://eisnstein.github.io/posts" />
-<meta property="og:url" content="https://eisnstein.github.io/posts" />
+<link rel="canonical" href="https://eisnstein.github.io/projects" />
+<meta property="og:url" content="https://eisnstein.github.io/projects" />
 <meta property="og:site_name" content="Daniel’s Blog" />
 <meta property="og:type" content="website" />
 <meta name="twitter:card" content="summary" />
-<meta property="twitter:title" content="Posts" />
+<meta property="twitter:title" content="Projects" />
 <meta name="twitter:site" content="@eisnstein" />
 <meta name="twitter:creator" content="@Daniel" />
 <script type="application/ld+json">
-{"@context":"https://schema.org","@type":"WebPage","author":{"@type":"Person","name":"Daniel"},"description":"Personal Blog of Daniel, writing about programming mostly in C#, Rust, TypeScript and Elixir.","headline":"Posts","url":"https://eisnstein.github.io/posts"}</script>
+{"@context":"https://schema.org","@type":"WebPage","author":{"@type":"Person","name":"Daniel"},"description":"Personal Blog of Daniel, writing about programming mostly in C#, Rust, TypeScript and Elixir.","headline":"Projects","url":"https://eisnstein.github.io/projects"}</script>
 <!-- End Jekyll SEO tag -->
 
     <link
@@ -61,11 +61,11 @@
   <ul class="flex gap-x-4">
     
       <li>
-        <a href="/posts" class="dark:hover:text-white dark:hover:underline dark:text-white dark:font-medium">Posts</a>
+        <a href="/posts" class="dark:hover:text-white dark:hover:underline ">Posts</a>
       </li>
     
       <li>
-        <a href="/projects" class="dark:hover:text-white dark:hover:underline ">Projects</a>
+        <a href="/projects" class="dark:hover:text-white dark:hover:underline dark:text-white dark:font-medium">Projects</a>
       </li>
     
   </ul>
@@ -74,62 +74,49 @@
     <main
       class="mt-8 px-2 md:px-0 prose prose-slate dark:prose-invert mx-auto lg:prose-lg"
     >
-      <h1>Posts</h1>
-<p>
-  With this blog I am trying to share knowledge in different areas and
-  programming languages. Tutorials, solutions to problems I encountered and
-  everything else that comes up.
-</p>
+      <h1>Projects</h1>
+<p>Some of my projects. (Ok, right now only one).</p>
 <hr />
-<section class="not-prose">
-  <ul class="list-none">
-    
-    <li>
-      <a
-        class="flex items-center justify-between -mx-0 md:-mx-4 py-2 px-0 md:px-4 group hover:bg-slate-800 rounded"
-        href="/2022/09/22/pattern-matching-in-csharp-list-pattern"
-      >
-        <span class="flex flex-col">
-          <time class="dark:text-slate-400 text-sm"
-            >22 Sep 2022</time
-          >
-          <h3 class="m-0 group-hover:text-white">Pattern Matching In C# - List Patterns</h3>
-        </span>
-        <span>
-          
-          <span
-            class="ml-1 inline-block align-middle rounded-full px-2 bg-slate-300 text-sm text-slate-700"
-            >csharp</span
-          >
-          
-        </span>
-      </a>
-    </li>
-    
-    <li>
-      <a
-        class="flex items-center justify-between -mx-0 md:-mx-4 py-2 px-0 md:px-4 group hover:bg-slate-800 rounded"
-        href="/2022/05/10/pattern-matching-in-csharp"
-      >
-        <span class="flex flex-col">
-          <time class="dark:text-slate-400 text-sm"
-            >10 May 2022</time
-          >
-          <h3 class="m-0 group-hover:text-white">Pattern Matching In C#</h3>
-        </span>
-        <span>
-          
-          <span
-            class="ml-1 inline-block align-middle rounded-full px-2 bg-slate-300 text-sm text-slate-700"
-            >csharp</span
-          >
-          
-        </span>
-      </a>
-    </li>
-    
-  </ul>
-</section>
+<article>
+  <h2>PackCheck</h2>
+  <div class="flex gap-x-4 not-prose">
+    <a href="https://nuget.org/packages/PackCheck" target="_blank"
+      ><img src="https://img.shields.io/nuget/vpre/PackCheck"
+    /></a>
+  </div>
+  <p>
+    <a href="https://www.nuget.org/packages/PackCheck" target="_blank"
+      >PackCheck</a
+    >
+    is a dotnet tool for checking and upgrading versions of
+    <a href="https://nuget.org" target="_blank">NuGet</a> packages. For NodeJS
+    projects I like to use
+    <a href="https://www.npmjs.com/package/npm-check-updates" target="_blank"
+      >npm-check-updates</a
+    >
+    and not the built in npm update command. But why? Simple. I want to directly
+    see in the package.json file which versions are installed. NCU does exactly
+    that, it changes the versions in the package.json file.
+  </p>
+  <p>
+    When I started to learn C# I was searching for something similar over at
+    <a href="https://www.nuget.org/" target="_blank">nuget.org</a> but could not
+    find anything. So I thought building such a
+    <a
+      href="https://learn.microsoft.com/en-us/dotnet/core/tools/global-tools-how-to-create"
+      >dotnet tool</a
+    >
+    would be a nice way for exploring C#. After I built
+    <a href="https://www.nuget.org/packages/PackCheck" target="_blank"
+      >PackCheck</a
+    >
+    and published it to NuGet I found out about the
+    <a href="https://www.nuget.org/packages/dotnet-outdated-tool"
+      >dotnet-outdated-tool</a
+    >
+    🤪.
+  </p>
+</article>
 
     </main>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.1/highlight.min.js"></script>
