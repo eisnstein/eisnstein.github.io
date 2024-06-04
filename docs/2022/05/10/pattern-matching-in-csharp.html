@@ -10,7 +10,7 @@
     />
     <!-- Begin Jekyll SEO tag v2.8.0 -->
 <title>Pattern Matching In C# | Daniel’s Blog</title>
-<meta name="generator" content="Jekyll v4.2.2" />
+<meta name="generator" content="Jekyll v4.3.3" />
 <meta property="og:title" content="Pattern Matching In C#" />
 <meta name="author" content="Daniel" />
 <meta property="og:locale" content="en_US" />
@@ -239,9 +239,9 @@
   <span class="p">=&gt;</span> <span class="n">temp</span> <span class="k">switch</span>
   <span class="p">{</span>
     <span class="p">&lt;</span> <span class="p">-</span><span class="m">20</span>           <span class="p">=&gt;</span> <span class="s">"very cold"</span><span class="p">,</span>
-    <span class="p">&gt;=</span> <span class="p">-</span><span class="m">20</span> <span class="n">and</span> <span class="p">&lt;</span> <span class="m">0</span>  <span class="p">=&gt;</span> <span class="s">"cold"</span><span class="p">,</span>
-    <span class="p">&gt;</span> <span class="m">0</span> <span class="n">and</span> <span class="p">&lt;=</span> <span class="m">10</span>   <span class="p">=&gt;</span> <span class="s">"a little cold"</span><span class="p">,</span>
-    <span class="p">&gt;</span> <span class="m">10</span> <span class="n">and</span> <span class="p">&lt;=</span> <span class="m">20</span>  <span class="p">=&gt;</span> <span class="s">"warm"</span><span class="p">,</span>
+    <span class="p">&gt;=</span> <span class="p">-</span><span class="m">20</span> <span class="k">and</span> <span class="p">&lt;</span> <span class="m">0</span>  <span class="p">=&gt;</span> <span class="s">"cold"</span><span class="p">,</span>
+    <span class="p">&gt;</span> <span class="m">0</span> <span class="k">and</span> <span class="p">&lt;=</span> <span class="m">10</span>   <span class="p">=&gt;</span> <span class="s">"a little cold"</span><span class="p">,</span>
+    <span class="p">&gt;</span> <span class="m">10</span> <span class="k">and</span> <span class="p">&lt;=</span> <span class="m">20</span>  <span class="p">=&gt;</span> <span class="s">"warm"</span><span class="p">,</span>
     <span class="p">&gt;</span> <span class="m">20</span>            <span class="p">=&gt;</span> <span class="s">"hot"</span><span class="p">,</span>
     <span class="n">_</span> <span class="p">=&gt;</span> <span class="k">throw</span> <span class="k">new</span> <span class="nf">ArgumentOutOfRangeException</span><span class="p">(</span><span class="k">nameof</span><span class="p">(</span><span class="n">temp</span><span class="p">),</span> <span class="s">$"</span><span class="p">{</span><span class="n">temp</span><span class="p">}</span><span class="s">"</span><span class="p">)</span>
   <span class="p">};</span>
@@ -255,9 +255,9 @@
 <span class="kt">int</span> <span class="nf">GetCharScrabbleValue</span><span class="p">(</span><span class="kt">char</span> <span class="n">c</span><span class="p">)</span>
   <span class="p">=&gt;</span> <span class="kt">char</span><span class="p">.</span><span class="nf">ToUpper</span><span class="p">(</span><span class="n">c</span><span class="p">)</span> <span class="k">switch</span>
   <span class="p">{</span>
-    <span class="sc">'A'</span> <span class="n">or</span> <span class="sc">'B'</span> <span class="n">or</span> <span class="sc">'C'</span> <span class="p">=&gt;</span> <span class="m">1</span><span class="p">,</span>
+    <span class="sc">'A'</span> <span class="k">or</span> <span class="sc">'B'</span> <span class="k">or</span> <span class="sc">'C'</span> <span class="p">=&gt;</span> <span class="m">1</span><span class="p">,</span>
     <span class="sc">'D'</span>               <span class="p">=&gt;</span> <span class="m">2</span><span class="p">,</span>
-    <span class="sc">'E'</span> <span class="n">or</span> <span class="sc">'F'</span>        <span class="p">=&gt;</span> <span class="m">3</span><span class="p">,</span>
+    <span class="sc">'E'</span> <span class="k">or</span> <span class="sc">'F'</span>        <span class="p">=&gt;</span> <span class="m">3</span><span class="p">,</span>
     <span class="n">_</span>                 <span class="p">=&gt;</span> <span class="m">4</span>
   <span class="p">};</span>
 </code></pre></div></div>
@@ -282,9 +282,9 @@
   <span class="p">};</span>
 
 <span class="k">interface</span> <span class="nc">Animal</span> <span class="p">{}</span>
-<span class="n">record</span> <span class="n">Cat</span> <span class="p">:</span> <span class="n">Animal</span><span class="p">;</span>
-<span class="n">record</span> <span class="n">Dog</span> <span class="p">:</span> <span class="n">Animal</span><span class="p">;</span>
-<span class="n">record</span> <span class="n">Bird</span> <span class="p">:</span> <span class="n">Animal</span><span class="p">;</span>
+<span class="k">record</span> <span class="nc">Cat</span> <span class="p">:</span> <span class="n">Animal</span><span class="p">;</span>
+<span class="k">record</span> <span class="nc">Dog</span> <span class="p">:</span> <span class="n">Animal</span><span class="p">;</span>
+<span class="k">record</span> <span class="nc">Bird</span> <span class="p">:</span> <span class="n">Animal</span><span class="p">;</span>
 </code></pre></div></div>
 
 <h3 id="property-patterns">Property patterns</h3>
@@ -317,8 +317,8 @@
     <span class="n">_</span> <span class="p">=&gt;</span> <span class="k">false</span>
   <span class="p">};</span>
 
-<span class="n">record</span> <span class="nf">Adress</span><span class="p">(</span><span class="kt">string</span> <span class="n">Street</span><span class="p">,</span> <span class="kt">string</span> <span class="n">City</span><span class="p">);</span>
-<span class="n">record</span> <span class="nf">Person</span><span class="p">(</span><span class="kt">string</span> <span class="n">Name</span><span class="p">,</span> <span class="n">Address</span> <span class="n">Address</span><span class="p">);</span>
+<span class="k">record</span> <span class="nc">Adress</span><span class="p">(</span><span class="kt">string</span> <span class="n">Street</span><span class="p">,</span> <span class="kt">string</span> <span class="n">City</span><span class="p">);</span>
+<span class="k">record</span> <span class="nc">Person</span><span class="p">(</span><span class="kt">string</span> <span class="n">Name</span><span class="p">,</span> <span class="n">Address</span> <span class="n">Address</span><span class="p">);</span>
 </code></pre></div></div>
 
 <p>A few things to mention regarding the preceding code examples. In the first example in the first <strong>switch expression arm</strong>, the input is matched against <code class="language-plaintext highlighter-rouge">string { Length: &gt;= 7 } s =&gt; ...</code>. Two things are happening here. First, the incoming string value is checked to be at least 7 characters long and second, is then assigned to a new local variable <code class="language-plaintext highlighter-rouge">s</code>. This is actually the <strong>var pattern</strong>, which is useful if you need to create a temporary var for future use. In that case it is not really needed, but I showed it here for demonstration purposes.</p>
