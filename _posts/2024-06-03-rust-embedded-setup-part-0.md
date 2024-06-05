@@ -3,10 +3,10 @@ layout: post
 tags: rust embedded arm
 slug: rust-embedded-setup-part-0
 title: "Rust Embedded: Setup - Part 0"
-description: Setup for programming the ST Discovery Board 3 with Rust
+description: Setup for programming the ST Discovery Board 3 with Rust on Windows 10
 ---
 
-In this post I want show what you have to do, to get started programming a STM32F3 Discovery board with Rust on Windows 10.
+In this post I want show what you have to do, to get started programming a STM32F3 Discovery board with Rust on Windows 10. This is more or less a short version of the [Rust Embedded Discovery](https://docs.rust-embedded.org/discovery/f3discovery/03-setup/index.html) book install and setup sections.
 
 We need a few things:
 
@@ -18,7 +18,7 @@ We need a few things:
 
 You don't have to use the F3 Discovery board as it is - as far as I know - already outdated. You probably could also use a new ST board, like one of the Nucleo boards. However, you then would need to adapt the code and crates to the specific board.
 
-After you have installed `Rust` you need to run this commands:
+After you have installed the Driver, OpenOCD, Rust and the ARM GNU Toolchain you need to run those commands:
 
 ```sh
 rustup target add thumbv7em-none-eabi
