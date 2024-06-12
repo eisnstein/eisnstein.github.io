@@ -15,6 +15,7 @@ We need a few things:
 3. On-Chip programming and debugging: [OpenOCD](https://github.com/openocd-org/openocd/releases/download/v0.12.0/openocd-v0.12.0-i686-w64-mingw32.tar.gz)
 4. [Rust](https://www.rust-lang.org/learn/get-started)
 5. [ARM GNU Toolchain](https://developer.arm.com/downloads/-/arm-gnu-toolchain-downloads): Windows (mingw-w64-i686) hosted cross toolchains - AArch32 bare-metal target (arm-none-eabi)
+6. [STMF32F3 Reference Manual](https://www.st.com/resource/en/reference_manual/rm0316-stm32f303xbcde-stm32f303x68-stm32f328x8-stm32f358xc-stm32f398xe-advanced-armbased-mcus-stmicroelectronics.pdf)
 
 You don't have to use the F3 Discovery board as it is - as far as I know - already outdated. You probably could also use a new ST board, like one of the Nucleo boards. However, you then would need to adapt the code and crates to the specific board.
 
@@ -51,3 +52,5 @@ openocd -f board/stm32f3discovery.cfg
 # Info : starting gdb server for stm32f3x.cpu on 3333
 # Info : Listening on port 3333 for gdb connections
 ```
+
+On to Part 1 -> [Rust Embedded: Blinky - Part 1]({% post_url 2024-06-04-rust-embedded-blinky-part-1 %})
