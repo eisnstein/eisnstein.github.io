@@ -106,4 +106,4 @@ The offsets for the RCC_CR (control register) and RCC_AHBENR (AHB peripheral clo
 ![RCC_CR screenshot of control register details](/assets/images/posts/re-part-1/stm32f3_rcc_cr.png)
 *STM32F3 Reference Manual p. 139*
 
-Next we need some pointers for our output port - we use port E. To be able to configure, read and write to port E, we need the base address, the address for `port mode` register, the `output data` register and the `port bit set/reset` register. Again you find the base register in section **3.2.2** and the offsets for each register in their respective sections starting from **11.4 GPIO registers**.
+Next we need some pointers for our output port - we use port E. To be able to configure, read and write to port E, we need the base address, the address for the `port mode` register, the `output data` register and the `port bit set/reset` register. Again, you find the base register in section **3.2.2** and the offsets for each register in their respective sections starting from section **11.4 GPIO registers**.

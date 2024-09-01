@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#072344" />
+    <meta
+      name="keywords"
+      content="blog, programming, functional, tutorials, csharp, rust, typescript, elixir"
+    />
+    <!-- Begin Jekyll SEO tag v2.8.0 -->
+<title>Rust Embedded: Blinky - Part 1 | Daniel’s Blog</title>
+<meta name="generator" content="Jekyll v4.3.3" />
+<meta property="og:title" content="Rust Embedded: Blinky - Part 1" />
+<meta name="author" content="Daniel" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="Writing the “Hello World” of embedded programming in Rust." />
+<meta property="og:description" content="Writing the “Hello World” of embedded programming in Rust." />
+<link rel="canonical" href="https://eisnstein.github.io/2024/06/04/rust-embedded-blinky-part-1" />
+<meta property="og:url" content="https://eisnstein.github.io/2024/06/04/rust-embedded-blinky-part-1" />
+<meta property="og:site_name" content="Daniel’s Blog" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2024-06-04T00:00:00+02:00" />
+<meta name="twitter:card" content="summary" />
+<meta property="twitter:title" content="Rust Embedded: Blinky - Part 1" />
+<meta name="twitter:site" content="@eisnstein" />
+<meta name="twitter:creator" content="@Daniel" />
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Daniel"},"dateModified":"2024-06-04T00:00:00+02:00","datePublished":"2024-06-04T00:00:00+02:00","description":"Writing the “Hello World” of embedded programming in Rust.","headline":"Rust Embedded: Blinky - Part 1","mainEntityOfPage":{"@type":"WebPage","@id":"https://eisnstein.github.io/2024/06/04/rust-embedded-blinky-part-1"},"url":"https://eisnstein.github.io/2024/06/04/rust-embedded-blinky-part-1"}</script>
+<!-- End Jekyll SEO tag -->
+
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="32x32"
+      href="/assets/images/favicon-32x32.png"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="16x16"
+      href="/assets/images/favicon-16x16.png"
+    />
+    <link rel="manifest" href="/site.webmanifest" />
+    <link rel="preconnect" href="https://fonts.bunny.net" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.bunny.net/css?family=inter:300,400,500,700&display=swap"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.1/styles/github-dark.min.css"
+    />
+    <link rel="stylesheet" href="/assets/css/styles.css" />
+    <script defer data-domain="danielhoeflehner.tech" src="https://analytics.danielhoeflehner.tech/js/script.js"></script>
+  </head>
+  <body
+    class="min-h-screen antialiased text-slate-500 dark:text-slate-400 bg-white dark:bg-slate-900"
+  >
+    <header class="py-6 px-2 md:px-0 max-w-prose mx-auto lg:prose-lg">
+      <nav class="flex items-center justify-between">
+  <a href="/" class="dark:hover:text-white dark:hover:underline ">Daniel's Blog</a>
+  <ul class="flex gap-x-4">
+    
+      <li>
+        <a href="/posts" class="dark:hover:text-white dark:hover:underline ">Posts</a>
+      </li>
+    
+      <li>
+        <a href="/projects" class="dark:hover:text-white dark:hover:underline ">Projects</a>
+      </li>
+    
+  </ul>
+</nav>
+    </header>
+    <main
+      class="mt-8 px-2 md:px-0 prose prose-slate dark:prose-invert mx-auto lg:prose-lg"
+    >
+      <article>
+  <time class="dark:text-slate-400 text-sm"
+    >04 Jun 2024</time
+  >
+  <h1>Rust Embedded: Blinky - Part 1</h1>
+  <div class="mb-3">
+    
+    <span
+      class="ml-1 inline-block align-middle rounded-full px-2 bg-slate-300 text-sm text-slate-700"
+      >rust</span
+    >
+    
+    <span
+      class="ml-1 inline-block align-middle rounded-full px-2 bg-slate-300 text-sm text-slate-700"
+      >embedded</span
+    >
+    
+    <span
+      class="ml-1 inline-block align-middle rounded-full px-2 bg-slate-300 text-sm text-slate-700"
+      >arm</span
+    >
+    
+  </div>
+  <p>We are going to start off with the “Hello World” of embedded progamming - blinking an LED. And we are going to do this as <em>raw</em> as possible. By <em>raw</em> i mean, that for now we are not going to use any HAL crate. HAL stands for “Hardware Abstraction Layer”. There a few different HALs for different Microcontrollers. Basically these crates provide standardized APIs for interacting with the Microcontroller and its peripherals.</p>
+
+<p>Here is the full code example for our raw blinky program. Further down we’ll go through the code in more detail.</p>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">#![no_main]</span>
+<span class="nd">#![no_std]</span>
+
+<span class="k">extern</span> <span class="k">crate</span> <span class="n">panic_halt</span><span class="p">;</span>
+
+<span class="k">use</span> <span class="nn">core</span><span class="p">::{</span>
+    <span class="nn">arch</span><span class="p">::</span><span class="n">asm</span><span class="p">,</span>
+    <span class="nn">ptr</span><span class="p">::{</span><span class="k">self</span><span class="p">},</span>
+<span class="p">};</span>
+
+<span class="k">use</span> <span class="nn">cortex_m_rt</span><span class="p">::</span><span class="n">entry</span><span class="p">;</span>
+<span class="k">use</span> <span class="nn">cortex_m_semihosting</span><span class="p">::{</span><span class="k">self</span><span class="p">,</span> <span class="n">hprintln</span><span class="p">};</span>
+
+<span class="k">const</span> <span class="n">RCC</span><span class="p">:</span> <span class="nb">u32</span> <span class="o">=</span> <span class="mi">0x4002_1000</span><span class="p">;</span>
+<span class="k">const</span> <span class="n">RCC_CR</span><span class="p">:</span> <span class="o">*</span><span class="k">mut</span> <span class="nb">u32</span> <span class="o">=</span> <span class="p">(</span><span class="n">RCC</span> <span class="o">+</span> <span class="mi">0x00</span><span class="p">)</span> <span class="k">as</span> <span class="o">*</span><span class="k">mut</span> <span class="nb">u32</span><span class="p">;</span>
+<span class="k">const</span> <span class="n">RCC_AHBENR</span><span class="p">:</span> <span class="o">*</span><span class="k">mut</span> <span class="nb">u32</span> <span class="o">=</span> <span class="p">(</span><span class="n">RCC</span> <span class="o">+</span> <span class="mi">0x14</span><span class="p">)</span> <span class="k">as</span> <span class="o">*</span><span class="k">mut</span> <span class="nb">u32</span><span class="p">;</span>
+
+<span class="k">const</span> <span class="n">GPIOE</span><span class="p">:</span> <span class="nb">u32</span> <span class="o">=</span> <span class="mi">0x4800_1000</span><span class="p">;</span>
+<span class="k">const</span> <span class="n">GPIOE_MODER</span><span class="p">:</span> <span class="o">*</span><span class="k">mut</span> <span class="nb">u32</span> <span class="o">=</span> <span class="p">(</span><span class="n">GPIOE</span> <span class="o">+</span> <span class="mi">0x00</span><span class="p">)</span> <span class="k">as</span> <span class="o">*</span><span class="k">mut</span> <span class="nb">u32</span><span class="p">;</span>
+<span class="k">const</span> <span class="n">GPIOE_ODR</span><span class="p">:</span> <span class="o">*</span><span class="k">mut</span> <span class="nb">u32</span> <span class="o">=</span> <span class="p">(</span><span class="n">GPIOE</span> <span class="o">+</span> <span class="mi">0x14</span><span class="p">)</span> <span class="k">as</span> <span class="o">*</span><span class="k">mut</span> <span class="nb">u32</span><span class="p">;</span>
+<span class="k">const</span> <span class="n">GPIOE_BSRR</span><span class="p">:</span> <span class="o">*</span><span class="k">mut</span> <span class="nb">u32</span> <span class="o">=</span> <span class="p">(</span><span class="n">GPIOE</span> <span class="o">+</span> <span class="mi">0x18</span><span class="p">)</span> <span class="k">as</span> <span class="o">*</span><span class="k">mut</span> <span class="nb">u32</span><span class="p">;</span>
+
+<span class="nd">#[entry]</span>
+<span class="k">fn</span> <span class="nf">main</span><span class="p">()</span> <span class="k">-&gt;</span> <span class="o">!</span> <span class="p">{</span>
+    <span class="c1">// You should see that in your openocd output</span>
+    <span class="nd">hprintln!</span><span class="p">(</span><span class="s">"Hello from Discovery"</span><span class="p">);</span>
+
+    <span class="k">unsafe</span> <span class="p">{</span>
+        <span class="k">let</span> <span class="k">mut</span> <span class="n">val</span> <span class="o">=</span> <span class="nn">ptr</span><span class="p">::</span><span class="nf">read_volatile</span><span class="p">(</span><span class="n">RCC_CR</span><span class="p">);</span>
+        <span class="c1">// Use the HSI as system clock (8MHz)</span>
+        <span class="n">val</span> <span class="p">|</span><span class="o">=</span> <span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="mi">1</span><span class="p">;</span>
+        <span class="nn">ptr</span><span class="p">::</span><span class="nf">write_volatile</span><span class="p">(</span><span class="n">RCC_CR</span><span class="p">,</span> <span class="n">val</span><span class="p">);</span>
+
+        <span class="n">val</span> <span class="o">=</span> <span class="nn">ptr</span><span class="p">::</span><span class="nf">read_volatile</span><span class="p">(</span><span class="n">RCC_AHBENR</span><span class="p">);</span>
+        <span class="c1">// Enable GPIO E clock</span>
+        <span class="n">val</span> <span class="p">|</span><span class="o">=</span> <span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="mi">21</span><span class="p">;</span>
+        <span class="nn">ptr</span><span class="p">::</span><span class="nf">write_volatile</span><span class="p">(</span><span class="n">RCC_AHBENR</span><span class="p">,</span> <span class="n">val</span><span class="p">);</span>
+
+        <span class="c1">// Set Pin 9 to output: PE 9 = Bit 19 &amp; 18</span>
+        <span class="n">val</span> <span class="o">=</span> <span class="nn">ptr</span><span class="p">::</span><span class="nf">read_volatile</span><span class="p">(</span><span class="n">GPIOE_MODER</span><span class="p">);</span>
+        <span class="n">val</span> <span class="o">&amp;=</span> <span class="mi">0xFFF3_FFFF</span><span class="p">;</span> <span class="c1">// Clear Bit 19 &amp; 18</span>
+        <span class="n">val</span> <span class="p">|</span><span class="o">=</span> <span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="mi">18</span><span class="p">;</span> <span class="c1">// Set Bit 18</span>
+        <span class="nn">ptr</span><span class="p">::</span><span class="nf">write_volatile</span><span class="p">(</span><span class="n">GPIOE_MODER</span><span class="p">,</span> <span class="n">val</span><span class="p">);</span>
+
+        <span class="k">loop</span> <span class="p">{</span>
+            <span class="c1">// Read in the output data register of GPIO Port E</span>
+            <span class="k">let</span> <span class="n">val</span> <span class="o">=</span> <span class="nn">ptr</span><span class="p">::</span><span class="nf">read_volatile</span><span class="p">(</span><span class="n">GPIOE_ODR</span><span class="p">);</span>
+            <span class="c1">// If Pin 9 is currently in High state, switch to Low, </span>
+            <span class="c1">// otherwise switch to High</span>
+            <span class="k">if</span> <span class="n">val</span> <span class="o">&amp;</span> <span class="p">(</span><span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="mi">9</span><span class="p">)</span> <span class="o">==</span> <span class="p">(</span><span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="mi">9</span><span class="p">)</span> <span class="p">{</span>
+                <span class="c1">// Set Pin 18 Low</span>
+                <span class="nn">ptr</span><span class="p">::</span><span class="nf">write_volatile</span><span class="p">(</span><span class="n">GPIOE_BSRR</span><span class="p">,</span> <span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="mi">25</span><span class="p">);</span>
+            <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+                <span class="c1">// Set Pin 18 High</span>
+                <span class="nn">ptr</span><span class="p">::</span><span class="nf">write_volatile</span><span class="p">(</span><span class="n">GPIOE_BSRR</span><span class="p">,</span> <span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="mi">9</span><span class="p">);</span>
+            <span class="p">}</span>
+
+            <span class="nf">delay</span><span class="p">();</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="k">unsafe</span> <span class="k">fn</span> <span class="nf">delay</span><span class="p">()</span> <span class="p">{</span>
+    <span class="c1">// Delay for approx 1s - found 80.000 by "brute force"</span>
+    <span class="k">for</span> <span class="n">_</span> <span class="k">in</span> <span class="mi">0</span><span class="o">..</span><span class="mi">80_000</span> <span class="p">{</span>
+        <span class="nd">asm!</span><span class="p">(</span><span class="s">"nop"</span><span class="p">);</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>The first 2 lines are important. Because we do not have an operating system, like Linux or Windows, running on our embedded device, we cannot use the rust std library. That’s why we need the <code class="language-plaintext highlighter-rouge">#![no_std]</code>. The <code class="language-plaintext highlighter-rouge">#![no_main]</code> is needed because we are going to annotate our main function with the <code class="language-plaintext highlighter-rouge">entry</code> attribute from the <code class="language-plaintext highlighter-rouge">cortex-m-rt</code> crate and by that, we create our own custom <code class="language-plaintext highlighter-rouge">main</code> function. At the beginning I mentioned, that we are going to do it <em>raw</em>. And now I am writing about a <code class="language-plaintext highlighter-rouge">cortex-m-rt</code> crate. This is, because I tried to be as raw as possible. This crate however is needed because it does the heavy lifting at the beginning of our program (initialising the microcontroller etc.). The <code class="language-plaintext highlighter-rouge">rt</code> basically stands for <code class="language-plaintext highlighter-rouge">runtime</code>.</p>
+
+<p>Next we need another crate - the <code class="language-plaintext highlighter-rouge">panic-halt</code> crate. Every embedded programm needs a handler for panics, and this crate provides exactly that.</p>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">const</span> <span class="n">RCC</span><span class="p">:</span> <span class="nb">u32</span> <span class="o">=</span> <span class="mi">0x4002_1000</span><span class="p">;</span>
+<span class="k">const</span> <span class="n">RCC_CR</span><span class="p">:</span> <span class="o">*</span><span class="k">mut</span> <span class="nb">u32</span> <span class="o">=</span> <span class="p">(</span><span class="n">RCC</span> <span class="o">+</span> <span class="mi">0x00</span><span class="p">)</span> <span class="k">as</span> <span class="o">*</span><span class="k">mut</span> <span class="nb">u32</span><span class="p">;</span>
+<span class="k">const</span> <span class="n">RCC_AHBENR</span><span class="p">:</span> <span class="o">*</span><span class="k">mut</span> <span class="nb">u32</span> <span class="o">=</span> <span class="p">(</span><span class="n">RCC</span> <span class="o">+</span> <span class="mi">0x14</span><span class="p">)</span> <span class="k">as</span> <span class="o">*</span><span class="k">mut</span> <span class="nb">u32</span><span class="p">;</span>
+
+<span class="k">const</span> <span class="n">GPIOE</span><span class="p">:</span> <span class="nb">u32</span> <span class="o">=</span> <span class="mi">0x4800_1000</span><span class="p">;</span>
+<span class="k">const</span> <span class="n">GPIOE_MODER</span><span class="p">:</span> <span class="o">*</span><span class="k">mut</span> <span class="nb">u32</span> <span class="o">=</span> <span class="p">(</span><span class="n">GPIOE</span> <span class="o">+</span> <span class="mi">0x00</span><span class="p">)</span> <span class="k">as</span> <span class="o">*</span><span class="k">mut</span> <span class="nb">u32</span><span class="p">;</span>
+<span class="k">const</span> <span class="n">GPIOE_ODR</span><span class="p">:</span> <span class="o">*</span><span class="k">mut</span> <span class="nb">u32</span> <span class="o">=</span> <span class="p">(</span><span class="n">GPIOE</span> <span class="o">+</span> <span class="mi">0x14</span><span class="p">)</span> <span class="k">as</span> <span class="o">*</span><span class="k">mut</span> <span class="nb">u32</span><span class="p">;</span>
+<span class="k">const</span> <span class="n">GPIOE_BSRR</span><span class="p">:</span> <span class="o">*</span><span class="k">mut</span> <span class="nb">u32</span> <span class="o">=</span> <span class="p">(</span><span class="n">GPIOE</span> <span class="o">+</span> <span class="mi">0x18</span><span class="p">)</span> <span class="k">as</span> <span class="o">*</span><span class="k">mut</span> <span class="nb">u32</span><span class="p">;</span>
+</code></pre></div></div>
+
+<p>First we define some constant pointers to registers we later need. First the <code class="language-plaintext highlighter-rouge">RCC</code> register - reset and clock control. You can find the base address of the RCC registers in the reference manual of the STM32F303 microcontroller beginning at section <strong>3.2.2 - Memory map and register boundary addresses</strong> on page 54.</p>
+
+<p><img src="/assets/images/posts/re-part-1/stm32f3_rcc.png" alt="RCC screenshot of register address map" />
+<em>STM32F3 Reference Manual p. 54</em></p>
+
+<p>The offsets for the RCC_CR (control register) and RCC_AHBENR (AHB peripheral clock enable register) under section <strong>9.4.1 - Clock control register</strong> on page 139 and under section <strong>9.4.6 - AHB peripheral clock enable register</strong> on page 151 respectively. The responsibilities of each bit are also detailed at each section.</p>
+
+<p><img src="/assets/images/posts/re-part-1/stm32f3_rcc_cr.png" alt="RCC_CR screenshot of control register details" />
+<em>STM32F3 Reference Manual p. 139</em></p>
+
+<p>Next we need some pointers for our output port - we use port E. To be able to configure, read and write to port E, we need the base address, the address for the <code class="language-plaintext highlighter-rouge">port mode</code> register, the <code class="language-plaintext highlighter-rouge">output data</code> register and the <code class="language-plaintext highlighter-rouge">port bit set/reset</code> register. Again, you find the base register in section <strong>3.2.2</strong> and the offsets for each register in their respective sections starting from section <strong>11.4 GPIO registers</strong>.</p>
+
+</article>
+
+    </main>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.1/highlight.min.js"></script>
+    <script>
+      hljs.highlightAll()
+    </script>
+  </body>
+</html>

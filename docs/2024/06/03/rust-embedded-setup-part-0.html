@@ -52,6 +52,7 @@
       href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.1/styles/github-dark.min.css"
     />
     <link rel="stylesheet" href="/assets/css/styles.css" />
+    <script defer data-domain="danielhoeflehner.tech" src="https://analytics.danielhoeflehner.tech/js/script.js"></script>
   </head>
   <body
     class="min-h-screen antialiased text-slate-500 dark:text-slate-400 bg-white dark:bg-slate-900"
@@ -108,6 +109,7 @@
   <li>On-Chip programming and debugging: <a href="https://github.com/openocd-org/openocd/releases/download/v0.12.0/openocd-v0.12.0-i686-w64-mingw32.tar.gz">OpenOCD</a></li>
   <li><a href="https://www.rust-lang.org/learn/get-started">Rust</a></li>
   <li><a href="https://developer.arm.com/downloads/-/arm-gnu-toolchain-downloads">ARM GNU Toolchain</a>: Windows (mingw-w64-i686) hosted cross toolchains - AArch32 bare-metal target (arm-none-eabi)</li>
+  <li><a href="https://www.st.com/resource/en/reference_manual/rm0316-stm32f303xbcde-stm32f303x68-stm32f328x8-stm32f358xc-stm32f398xe-advanced-armbased-mcus-stmicroelectronics.pdf">STMF32F3 Reference Manual</a></li>
 </ol>
 
 <p>You don’t have to use the F3 Discovery board as it is - as far as I know - already outdated. You probably could also use a new ST board, like one of the Nucleo boards. However, you then would need to adapt the code and crates to the specific board.</p>
@@ -143,6 +145,8 @@ rustup component add llvm-tools-preview
 <span class="c"># Info : starting gdb server for stm32f3x.cpu on 3333</span>
 <span class="c"># Info : Listening on port 3333 for gdb connections</span>
 </code></pre></div></div>
+
+<p>On to Part 1 -&gt; <a href="/2024/06/04/rust-embedded-blinky-part-1">Rust Embedded: Blinky - Part 1</a></p>
 
 </article>
 
