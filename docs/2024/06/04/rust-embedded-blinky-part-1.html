@@ -192,12 +192,72 @@
 <p><img src="/assets/images/posts/re-part-1/stm32f3_rcc.png" alt="RCC screenshot of register address map" />
 <em>STM32F3 Reference Manual p. 54</em></p>
 
-<p>The offsets for the RCC_CR (control register) and RCC_AHBENR (AHB peripheral clock enable register) under section <strong>9.4.1 - Clock control register</strong> on page 139 and under section <strong>9.4.6 - AHB peripheral clock enable register</strong> on page 151 respectively. The responsibilities of each bit are also detailed at each section.</p>
+<p>The offsets for the RCC_CR (control register) and RCC_AHBENR (AHB peripheral clock enable register) can be found under section <strong>9.4.1 - Clock control register</strong> on page 139 and under section <strong>9.4.6 - AHB peripheral clock enable register</strong> on page 151 respectively. The responsibilities of each bit are also detailed at each section.</p>
 
 <p><img src="/assets/images/posts/re-part-1/stm32f3_rcc_cr.png" alt="RCC_CR screenshot of control register details" />
 <em>STM32F3 Reference Manual p. 139</em></p>
 
 <p>Next we need some pointers for our output port - we use port E. To be able to configure, read and write to port E, we need the base address, the address for the <code class="language-plaintext highlighter-rouge">port mode</code> register, the <code class="language-plaintext highlighter-rouge">output data</code> register and the <code class="language-plaintext highlighter-rouge">port bit set/reset</code> register. Again, you find the base register in section <strong>3.2.2</strong> and the offsets for each register in their respective sections starting from section <strong>11.4 GPIO registers</strong>.</p>
+
+<p>On to the actual implementation.</p>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">#[entry]</span>
+<span class="k">fn</span> <span class="nf">main</span><span class="p">()</span> <span class="k">-&gt;</span> <span class="o">!</span> <span class="p">{</span>
+    <span class="c1">// You should see that in your openocd output</span>
+    <span class="nd">hprintln!</span><span class="p">(</span><span class="s">"Hello from Discovery"</span><span class="p">);</span>
+
+    <span class="k">unsafe</span> <span class="p">{</span>
+        <span class="c1">// code...</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>As mentioned in the first paragraph, we need to annotate our main function with the <code class="language-plaintext highlighter-rouge">entry</code> attribute. The <code class="language-plaintext highlighter-rouge">hrprintln!()</code> is not really needed here, I inserted that for debugging reasons. After that comes the not so nice part - we need to wrap our code into an <code class="language-plaintext highlighter-rouge">unsafe</code> section, which is what you actually don’t want to use in a Rust project. But because we are doing it <em>raw</em> we have to use it.</p>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">let</span> <span class="k">mut</span> <span class="n">val</span> <span class="o">=</span> <span class="nn">ptr</span><span class="p">::</span><span class="nf">read_volatile</span><span class="p">(</span><span class="n">RCC_CR</span><span class="p">);</span>
+<span class="c1">// Use the HSI as system clock (8MHz)</span>
+<span class="n">val</span> <span class="p">|</span><span class="o">=</span> <span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="mi">1</span><span class="p">;</span>
+<span class="nn">ptr</span><span class="p">::</span><span class="nf">write_volatile</span><span class="p">(</span><span class="n">RCC_CR</span><span class="p">,</span> <span class="n">val</span><span class="p">);</span>
+
+<span class="n">val</span> <span class="o">=</span> <span class="nn">ptr</span><span class="p">::</span><span class="nf">read_volatile</span><span class="p">(</span><span class="n">RCC_AHBENR</span><span class="p">);</span>
+<span class="c1">// Enable GPIO E clock</span>
+<span class="n">val</span> <span class="p">|</span><span class="o">=</span> <span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="mi">21</span><span class="p">;</span>
+<span class="nn">ptr</span><span class="p">::</span><span class="nf">write_volatile</span><span class="p">(</span><span class="n">RCC_AHBENR</span><span class="p">,</span> <span class="n">val</span><span class="p">);</span>
+
+<span class="c1">// Set Pin 9 to output: PE 9 = Bit 19 &amp; 18</span>
+<span class="n">val</span> <span class="o">=</span> <span class="nn">ptr</span><span class="p">::</span><span class="nf">read_volatile</span><span class="p">(</span><span class="n">GPIOE_MODER</span><span class="p">);</span>
+<span class="n">val</span> <span class="o">&amp;=</span> <span class="mi">0xFFF3_FFFF</span><span class="p">;</span> <span class="c1">// Clear Bit 19 &amp; 18</span>
+<span class="n">val</span> <span class="p">|</span><span class="o">=</span> <span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="mi">18</span><span class="p">;</span> <span class="c1">// Set Bit 18</span>
+<span class="nn">ptr</span><span class="p">::</span><span class="nf">write_volatile</span><span class="p">(</span><span class="n">GPIOE_MODER</span><span class="p">,</span> <span class="n">val</span><span class="p">);</span>
+</code></pre></div></div>
+
+<p>In the first part we are initializing port E. First we the define, that the HSI (high speed internal clock) clock should be used as the system clock which runs at 8 MHz. Next we write <code class="language-plaintext highlighter-rouge">1</code> into bit 21 of the AHB peripheral clock enable register to enable the GPIO E clock. Lastly we need to set pin 9 of port E as <em>output</em>. Therefore we set bit 18 of the GPIOE mode register to <code class="language-plaintext highlighter-rouge">1</code>. Now we are setup to make our LED blink by setting pin 9 to <code class="language-plaintext highlighter-rouge">high</code> and <code class="language-plaintext highlighter-rouge">low</code> in a loop.</p>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">loop</span> <span class="p">{</span>
+    <span class="c1">// Read in the output data register of GPIO Port E</span>
+    <span class="k">let</span> <span class="n">val</span> <span class="o">=</span> <span class="nn">ptr</span><span class="p">::</span><span class="nf">read_volatile</span><span class="p">(</span><span class="n">GPIOE_ODR</span><span class="p">);</span>
+    <span class="c1">// If Pin 9 is currently in High state, switch to Low, </span>
+    <span class="c1">// otherwise switch to High</span>
+    <span class="k">if</span> <span class="n">val</span> <span class="o">&amp;</span> <span class="p">(</span><span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="mi">9</span><span class="p">)</span> <span class="o">==</span> <span class="p">(</span><span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="mi">9</span><span class="p">)</span> <span class="p">{</span>
+        <span class="c1">// Set Pin 18 Low</span>
+        <span class="nn">ptr</span><span class="p">::</span><span class="nf">write_volatile</span><span class="p">(</span><span class="n">GPIOE_BSRR</span><span class="p">,</span> <span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="mi">25</span><span class="p">);</span>
+    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+        <span class="c1">// Set Pin 18 High</span>
+        <span class="nn">ptr</span><span class="p">::</span><span class="nf">write_volatile</span><span class="p">(</span><span class="n">GPIOE_BSRR</span><span class="p">,</span> <span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="mi">9</span><span class="p">);</span>
+    <span class="p">}</span>
+
+    <span class="nf">delay</span><span class="p">();</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>In the loop, we first read the current state of port E from the GPIOE output register. In the if statement we check, if pin 9 of port E is currently set to <code class="language-plaintext highlighter-rouge">1</code> (high). If so, we write <code class="language-plaintext highlighter-rouge">1</code> into bit 25 of the GPIOE port bit set/reset register. Bits 16 to 31 of this register map to the corresponding bit in the output data register. And by writing a <code class="language-plaintext highlighter-rouge">1</code> into those bits, we can reset the bit in the ODR. Respectively we can set bits 0 to 15 which would set the corresponding bit in the ODR. So to set pin 9 to low, we need to write <code class="language-plaintext highlighter-rouge">1</code> into pin 25 (BR9) of the BSRR, and to set pin 9 to high, we need to write <code class="language-plaintext highlighter-rouge">1</code> into bit 9 (BS9).</p>
+
+<p><img src="/assets/images/posts/re-part-1/stm32f3_gpio_bsrr.png" alt="RCC_CR screenshot of GPIO port bit set/reset register details" />
+<em>STM32F3 Reference Manual p. 240</em></p>
+
+<p>Last we insert a delay of about 1s before we start the loop again.</p>
+
+<p>Maybe you are asking yourself why we use this <code class="language-plaintext highlighter-rouge">ptr::read_volatile</code> and <code class="language-plaintext highlighter-rouge">ptr::write_volatile</code> functions to set and read bits from registers. Those functions guarantee that the compiler is not optimizing away instructions, and that we always really read and write the bits of the registers.</p>
 
 </article>
 
