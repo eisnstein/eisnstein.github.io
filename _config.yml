@@ -1,7 +1,7 @@
 domain: eisnstein.github.io
 url: 'https://eisnstein.github.io' # the base hostname & protocol for your site, e.g. http://example.com
 baseurl: '/' # the subpath of your site, e.g. /blog
-author: Daniel
+author: Daniel Höflehner
 
 title: "Daniel's Blog"
 tagline: 'Writing about programming'
@@ -26,3 +26,10 @@ plugins:
 
 postcss:
   cache: false
+
+exclude:
+  - build.sh
+  - package-lock.json
+  - package.json
+  - "*.config.js"
+  - README.md
