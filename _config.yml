@@ -1,5 +1,5 @@
-domain: eisnstein.github.io
-url: 'https://eisnstein.github.io' # the base hostname & protocol for your site, e.g. http://example.com
+domain: danielhoeflehner.tech
+url: 'https://danielhoeflehner.tech' # the base hostname & protocol for your site, e.g. http://example.com
 baseurl: '/' # the subpath of your site, e.g. /blog
 author: Daniel Höflehner
 
