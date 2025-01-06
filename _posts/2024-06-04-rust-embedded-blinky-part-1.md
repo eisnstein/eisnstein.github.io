@@ -8,7 +8,9 @@ description: Writing the "Hello World" of embedded programming in Rust.
 
 We are going to start off with the "Hello World" of embedded progamming - blinking an LED. And we are going to do this as *raw* as possible. By *raw* i mean, that for now we are not going to use any HAL crate. HAL stands for "Hardware Abstraction Layer". There a few different HALs for different Microcontrollers. Basically these crates provide standardized APIs for interacting with the Microcontroller and its peripherals.
 
-Here is the full code example for our raw blinky program. Further down we'll go through the code in more detail.
+Code on [GitHub](https://github.com/eisnstein/rust-embedded-blinky/tree/raw-naive-delay){:target="\_blank" rel="noopener noreferrer"}.
+
+Here is the full code example for our raw blinky program. Further down we'll go through the code in more detail. 
 
 ```rust
 #![no_main]
@@ -170,3 +172,5 @@ In the loop, we first read the current state of port E from the GPIOE output reg
 Last we insert a delay of about 1s before we start the loop again.
 
 Maybe you are asking yourself why we use this `ptr::read_volatile` and `ptr::write_volatile` functions to set and read bits from registers. Those functions guarantee that the compiler is not optimizing away instructions, and that we always really read and write the bits of the registers.
+
+On to Part 2 -> [Rust Embedded: Blinky - Part 2]({% post_url 2025-01-06-rust-embedded-blinky-part-2 %})

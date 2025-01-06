@@ -101,6 +101,8 @@
   </div>
   <p>We are going to start off with the “Hello World” of embedded progamming - blinking an LED. And we are going to do this as <em>raw</em> as possible. By <em>raw</em> i mean, that for now we are not going to use any HAL crate. HAL stands for “Hardware Abstraction Layer”. There a few different HALs for different Microcontrollers. Basically these crates provide standardized APIs for interacting with the Microcontroller and its peripherals.</p>
 
+<p>Code on <a href="https://github.com/eisnstein/rust-embedded-blinky/tree/raw-naive-delay" target="\_blank" rel="noopener noreferrer">GitHub</a>.</p>
+
 <p>Here is the full code example for our raw blinky program. Further down we’ll go through the code in more detail.</p>
 
 <div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">#![no_main]</span>
@@ -258,6 +260,8 @@
 <p>Last we insert a delay of about 1s before we start the loop again.</p>
 
 <p>Maybe you are asking yourself why we use this <code class="language-plaintext highlighter-rouge">ptr::read_volatile</code> and <code class="language-plaintext highlighter-rouge">ptr::write_volatile</code> functions to set and read bits from registers. Those functions guarantee that the compiler is not optimizing away instructions, and that we always really read and write the bits of the registers.</p>
+
+<p>On to Part 2 -&gt; <a href="/2025/01/06/rust-embedded-blinky-part-2">Rust Embedded: Blinky - Part 2</a></p>
 
 </article>
 

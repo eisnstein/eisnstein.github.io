@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#072344" />
+    <meta
+      name="keywords"
+      content="blog, programming, functional, tutorials, csharp, rust, typescript, elixir"
+    />
+    <!-- Begin Jekyll SEO tag v2.8.0 -->
+<title>Rust Embedded: Blinky - Part 2 | Daniel’s Blog</title>
+<meta name="generator" content="Jekyll v4.3.3" />
+<meta property="og:title" content="Rust Embedded: Blinky - Part 2" />
+<meta name="author" content="Daniel Höflehner" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="Writing the “Hello World” of embedded programming in Rust." />
+<meta property="og:description" content="Writing the “Hello World” of embedded programming in Rust." />
+<link rel="canonical" href="https://danielhoeflehner.tech/2025/01/06/rust-embedded-blinky-part-2" />
+<meta property="og:url" content="https://danielhoeflehner.tech/2025/01/06/rust-embedded-blinky-part-2" />
+<meta property="og:site_name" content="Daniel’s Blog" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2025-01-06T00:00:00+01:00" />
+<meta name="twitter:card" content="summary" />
+<meta property="twitter:title" content="Rust Embedded: Blinky - Part 2" />
+<meta name="twitter:site" content="@eisnstein" />
+<meta name="twitter:creator" content="@Daniel Höflehner" />
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Daniel Höflehner"},"dateModified":"2025-01-06T00:00:00+01:00","datePublished":"2025-01-06T00:00:00+01:00","description":"Writing the “Hello World” of embedded programming in Rust.","headline":"Rust Embedded: Blinky - Part 2","mainEntityOfPage":{"@type":"WebPage","@id":"https://danielhoeflehner.tech/2025/01/06/rust-embedded-blinky-part-2"},"url":"https://danielhoeflehner.tech/2025/01/06/rust-embedded-blinky-part-2"}</script>
+<!-- End Jekyll SEO tag -->
+
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="32x32"
+      href="/assets/images/favicon-32x32.png"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="16x16"
+      href="/assets/images/favicon-16x16.png"
+    />
+    <link rel="manifest" href="/site.webmanifest" />
+    <link rel="preconnect" href="https://fonts.bunny.net" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.bunny.net/css?family=inter:300,400,500,700&display=swap"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.1/styles/github-dark.min.css"
+    />
+    <link rel="stylesheet" href="/assets/css/styles.css" />
+    <script defer data-domain="danielhoeflehner.tech" src="https://analytics.danielhoeflehner.tech/js/script.js"></script>
+  </head>
+  <body
+    class="min-h-screen antialiased text-slate-500 dark:text-slate-400 bg-white dark:bg-slate-900"
+  >
+    <header class="py-6 px-2 md:px-0 max-w-prose mx-auto lg:prose-lg">
+      <nav class="flex items-center justify-between">
+  <a href="/" class="dark:hover:text-white dark:hover:underline ">Daniel's Blog</a>
+  <ul class="flex gap-x-4">
+    
+      <li>
+        <a href="/posts" class="dark:hover:text-white dark:hover:underline ">Posts</a>
+      </li>
+    
+      <li>
+        <a href="/projects" class="dark:hover:text-white dark:hover:underline ">Projects</a>
+      </li>
+    
+  </ul>
+</nav>
+    </header>
+    <main
+      class="mt-8 px-2 md:px-0 prose prose-slate dark:prose-invert mx-auto lg:prose-lg"
+    >
+      <article>
+  <time class="dark:text-slate-400 text-sm"
+    >06 Jan 2025</time
+  >
+  <h1>Rust Embedded: Blinky - Part 2</h1>
+  <div class="mb-3">
+    
+    <span
+      class="ml-1 inline-block align-middle rounded-full px-2 bg-slate-300 text-sm text-slate-700"
+      >rust</span
+    >
+    
+    <span
+      class="ml-1 inline-block align-middle rounded-full px-2 bg-slate-300 text-sm text-slate-700"
+      >embedded</span
+    >
+    
+    <span
+      class="ml-1 inline-block align-middle rounded-full px-2 bg-slate-300 text-sm text-slate-700"
+      >arm</span
+    >
+    
+  </div>
+  <p>In this part we are going to use a hal crate which abstracts away most of the boilerplate code we had to write in our <em>raw</em> version from Part 1. We are going to use the <a href="https://docs.rs/stm32f3/0.15.1/stm32f3/" target="\_blank" rel="noopener noreferrer"><code class="language-plaintext highlighter-rouge">stm32f3</code> crate</a>.</p>
+
+<p>Code on <a href="https://github.com/eisnstein/rust-embedded-blinky/tree/hal-naive-delay" target="\_blank" rel="noopener noreferrer">GitHub</a>.</p>
+
+<p>Here is the full code example for our blinky program with the hal crate. Further down we’ll go through the code in more detail.</p>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">#![no_main]</span>
+<span class="nd">#![no_std]</span>
+
+<span class="k">extern</span> <span class="k">crate</span> <span class="n">panic_halt</span><span class="p">;</span>
+
+<span class="k">use</span> <span class="nn">core</span><span class="p">::</span><span class="nn">arch</span><span class="p">::</span><span class="n">asm</span><span class="p">;</span>
+
+<span class="k">use</span> <span class="nn">cortex_m_rt</span><span class="p">::</span><span class="n">entry</span><span class="p">;</span>
+<span class="k">use</span> <span class="nn">cortex_m_semihosting</span><span class="p">::{</span><span class="k">self</span><span class="p">,</span> <span class="n">hprintln</span><span class="p">};</span>
+<span class="k">use</span> <span class="nn">stm32f3</span><span class="p">::</span><span class="nn">stm32f303</span><span class="p">::{</span><span class="k">self</span><span class="p">};</span>
+
+<span class="nd">#[entry]</span>
+<span class="k">fn</span> <span class="nf">main</span><span class="p">()</span> <span class="k">-&gt;</span> <span class="o">!</span> <span class="p">{</span>
+    <span class="c1">// You should see that in your openocd output</span>
+    <span class="nd">hprintln!</span><span class="p">(</span><span class="s">"Hello from Discovery"</span><span class="p">);</span>
+
+    <span class="k">let</span> <span class="n">peripherals</span> <span class="o">=</span> <span class="nn">stm32f303</span><span class="p">::</span><span class="nn">Peripherals</span><span class="p">::</span><span class="nf">take</span><span class="p">()</span><span class="nf">.unwrap</span><span class="p">();</span>
+
+    <span class="k">let</span> <span class="n">rcc</span> <span class="o">=</span> <span class="o">&amp;</span><span class="n">peripherals</span><span class="py">.RCC</span><span class="p">;</span>
+    <span class="c1">// Set HSI clock on</span>
+    <span class="n">rcc</span><span class="py">.cr</span><span class="nf">.write</span><span class="p">(|</span><span class="n">w</span><span class="p">|</span> <span class="n">w</span><span class="nf">.hsion</span><span class="p">()</span><span class="nf">.set_bit</span><span class="p">());</span>
+    <span class="c1">// Enable GPIO Port E clock</span>
+    <span class="n">rcc</span><span class="py">.ahbenr</span><span class="nf">.write</span><span class="p">(|</span><span class="n">w</span><span class="p">|</span> <span class="n">w</span><span class="nf">.iopeen</span><span class="p">()</span><span class="nf">.set_bit</span><span class="p">());</span>
+
+    <span class="k">let</span> <span class="n">gpioe</span> <span class="o">=</span> <span class="o">&amp;</span><span class="n">peripherals</span><span class="py">.GPIOE</span><span class="p">;</span>
+
+    <span class="c1">// Set Pin 9 to output</span>
+    <span class="n">gpioe</span><span class="py">.moder</span><span class="nf">.write</span><span class="p">(|</span><span class="n">w</span><span class="p">|</span> <span class="n">w</span><span class="nf">.moder9</span><span class="p">()</span><span class="nf">.output</span><span class="p">());</span>
+
+    <span class="k">loop</span> <span class="p">{</span>
+        <span class="c1">// Read Port E Pin 9 output data register</span>
+        <span class="k">if</span> <span class="n">gpioe</span><span class="py">.odr</span><span class="nf">.read</span><span class="p">()</span><span class="nf">.odr9</span><span class="p">()</span><span class="nf">.bit_is_set</span><span class="p">()</span> <span class="p">{</span>
+            <span class="c1">// Write to bit reset register to set Pin 9 Low</span>
+            <span class="n">gpioe</span><span class="py">.bsrr</span><span class="nf">.write</span><span class="p">(|</span><span class="n">w</span><span class="p">|</span> <span class="n">w</span><span class="nf">.br9</span><span class="p">()</span><span class="nf">.set_bit</span><span class="p">());</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+            <span class="c1">// Write to bit set register to set Pin 9 High</span>
+            <span class="n">gpioe</span><span class="py">.bsrr</span><span class="nf">.write</span><span class="p">(|</span><span class="n">w</span><span class="p">|</span> <span class="n">w</span><span class="nf">.bs9</span><span class="p">()</span><span class="nf">.set_bit</span><span class="p">());</span>
+        <span class="p">}</span>
+
+        <span class="k">unsafe</span> <span class="p">{</span>
+            <span class="nf">delay</span><span class="p">();</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="k">unsafe</span> <span class="k">fn</span> <span class="nf">delay</span><span class="p">()</span> <span class="p">{</span>
+    <span class="c1">// Delay for approx 1s - found 80.000 by "brute force"</span>
+    <span class="k">for</span> <span class="n">_</span> <span class="k">in</span> <span class="mi">0</span><span class="o">..</span><span class="mi">80_000</span> <span class="p">{</span>
+        <span class="nd">asm!</span><span class="p">(</span><span class="s">"nop"</span><span class="p">);</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>First thing you probably noticed is the much reduced code we need to write when using the hal crate. Still we need to use the <code class="language-plaintext highlighter-rouge">no_std</code>, <code class="language-plaintext highlighter-rouge">no_main</code> and <code class="language-plaintext highlighter-rouge">entry</code> tag, but we can omit the pointers to the registers and we do not need to use the <code class="language-plaintext highlighter-rouge">unsafe</code> keyword anymore.</p>
+
+<p>On to the actual implementation.</p>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">#[entry]</span>
+<span class="k">fn</span> <span class="nf">main</span><span class="p">()</span> <span class="k">-&gt;</span> <span class="o">!</span> <span class="p">{</span>
+    <span class="c1">// You should see that in your openocd output</span>
+    <span class="nd">hprintln!</span><span class="p">(</span><span class="s">"Hello from Discovery"</span><span class="p">);</span>
+
+    <span class="k">let</span> <span class="n">peripherals</span> <span class="o">=</span> <span class="nn">stm32f303</span><span class="p">::</span><span class="nn">Peripherals</span><span class="p">::</span><span class="nf">take</span><span class="p">()</span><span class="nf">.unwrap</span><span class="p">();</span>
+
+    <span class="k">let</span> <span class="n">rcc</span> <span class="o">=</span> <span class="o">&amp;</span><span class="n">peripherals</span><span class="py">.RCC</span><span class="p">;</span>
+    <span class="c1">// Set HSI clock on</span>
+    <span class="n">rcc</span><span class="py">.cr</span><span class="nf">.write</span><span class="p">(|</span><span class="n">w</span><span class="p">|</span> <span class="n">w</span><span class="nf">.hsion</span><span class="p">()</span><span class="nf">.set_bit</span><span class="p">());</span>
+    <span class="c1">// Enable GPIO Port E clock</span>
+    <span class="n">rcc</span><span class="py">.ahbenr</span><span class="nf">.write</span><span class="p">(|</span><span class="n">w</span><span class="p">|</span> <span class="n">w</span><span class="nf">.iopeen</span><span class="p">()</span><span class="nf">.set_bit</span><span class="p">());</span>
+
+    <span class="k">let</span> <span class="n">gpioe</span> <span class="o">=</span> <span class="o">&amp;</span><span class="n">peripherals</span><span class="py">.GPIOE</span><span class="p">;</span>
+
+    <span class="c1">// Set Pin 9 to output</span>
+    <span class="n">gpioe</span><span class="py">.moder</span><span class="nf">.write</span><span class="p">(|</span><span class="n">w</span><span class="p">|</span> <span class="n">w</span><span class="nf">.moder9</span><span class="p">()</span><span class="nf">.output</span><span class="p">());</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>We still need to initialise the microcontroller and Port E. But now we can do that by leveraging the hal crate. We <em>take</em> the Peripherals which gives us access to the needed functions. <em>Taking</em> the Peripherals can only be done once in the whole program. In our case, this is not a problem, but it gets trickier as soon as you need to access a peripheral from another function or an interrupt handler. We’ll explore that in Part 3.</p>
+
+<p>The nice thing about the hal is, that we do need to care about register addresses or offsets - it’s all baked in and generated from the svd file into the hal crate. We get typed and named properties which we can use to control everything - down to the bits.</p>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">loop</span> <span class="p">{</span>
+    <span class="c1">// Read Port E Pin 9 output data register</span>
+    <span class="k">if</span> <span class="n">gpioe</span><span class="py">.odr</span><span class="nf">.read</span><span class="p">()</span><span class="nf">.odr9</span><span class="p">()</span><span class="nf">.bit_is_set</span><span class="p">()</span> <span class="p">{</span>
+        <span class="c1">// Write to bit reset register to set Pin 9 Low</span>
+        <span class="n">gpioe</span><span class="py">.bsrr</span><span class="nf">.write</span><span class="p">(|</span><span class="n">w</span><span class="p">|</span> <span class="n">w</span><span class="nf">.br9</span><span class="p">()</span><span class="nf">.set_bit</span><span class="p">());</span>
+    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+        <span class="c1">// Write to bit set register to set Pin 9 High</span>
+        <span class="n">gpioe</span><span class="py">.bsrr</span><span class="nf">.write</span><span class="p">(|</span><span class="n">w</span><span class="p">|</span> <span class="n">w</span><span class="nf">.bs9</span><span class="p">()</span><span class="nf">.set_bit</span><span class="p">());</span>
+    <span class="p">}</span>
+
+    <span class="k">unsafe</span> <span class="p">{</span>
+        <span class="nf">delay</span><span class="p">();</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>The loop again is straight forward and should be self-explanatory.</p>
+
+<p>Last we insert a delay of about 1s before we start the loop again.</p>
+
+</article>
+
+    </main>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.1/highlight.min.js"></script>
+    <script>
+      hljs.highlightAll()
+    </script>
+  </body>
+</html>
