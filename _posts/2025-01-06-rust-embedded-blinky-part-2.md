@@ -115,3 +115,5 @@ loop {
 The loop again is straight forward and should be self-explanatory.
 
 Last we insert a delay of about 1s before we start the loop again.
+
+On to Part 3 -> [Rust Embedded: Blinky - Part 3]({% post_url 2025-01-16-rust-embedded-blinky-part-3 %})
