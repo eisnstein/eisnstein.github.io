@@ -16,6 +16,7 @@ We need a few things:
 4. [Rust](https://www.rust-lang.org/learn/get-started)
 5. [ARM GNU Toolchain](https://developer.arm.com/downloads/-/arm-gnu-toolchain-downloads): Windows (mingw-w64-i686) hosted cross toolchains - AArch32 bare-metal target (arm-none-eabi)
 6. [STMF32F3 Reference Manual](https://www.st.com/resource/en/reference_manual/rm0316-stm32f303xbcde-stm32f303x68-stm32f328x8-stm32f358xc-stm32f398xe-advanced-armbased-mcus-stmicroelectronics.pdf)
+7. [STM32F3 Discovery Board User Manual](https://www.st.com/resource/en/user_manual/um1570-discovery-kit-with-stm32f303vc-mcu-stmicroelectronics.pdf)
 
 You don't have to use the F3 Discovery board as it is - as far as I know - already outdated. You probably could also use a new ST board, like one of the Nucleo boards. However, you then would need to adapt the code and crates to the specific board.
 
@@ -53,4 +54,4 @@ openocd -f board/stm32f3discovery.cfg
 # Info : Listening on port 3333 for gdb connections
 ```
 
-On to Part 1 -> [Rust Embedded: Blinky - Part 1]({% post_url 2024-06-04-rust-embedded-blinky-part-1 %})
+On to Part 1 -> [Rust Embedded: Setup - Part 1]({% post_url 2025-08-08-rust-embedded-setup-part-1 %})
