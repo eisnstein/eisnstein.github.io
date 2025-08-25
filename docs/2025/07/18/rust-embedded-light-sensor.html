@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#072344" />
+    <meta
+      name="keywords"
+      content="blog, programming, functional, tutorials, csharp, rust, typescript, elixir"
+    />
+    <!-- Begin Jekyll SEO tag v2.8.0 -->
+<title>Rust Embedded: Light Sensor - Part 1 | Daniel’s Blog</title>
+<meta name="generator" content="Jekyll v4.3.4" />
+<meta property="og:title" content="Rust Embedded: Light Sensor - Part 1" />
+<meta name="author" content="Daniel Höflehner" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="Reading values continuously from a light sensor." />
+<meta property="og:description" content="Reading values continuously from a light sensor." />
+<link rel="canonical" href="https://danielhoeflehner.tech/2025/07/18/rust-embedded-light-sensor" />
+<meta property="og:url" content="https://danielhoeflehner.tech/2025/07/18/rust-embedded-light-sensor" />
+<meta property="og:site_name" content="Daniel’s Blog" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2025-07-18T00:00:00+02:00" />
+<meta name="twitter:card" content="summary" />
+<meta property="twitter:title" content="Rust Embedded: Light Sensor - Part 1" />
+<meta name="twitter:site" content="@eisnstein" />
+<meta name="twitter:creator" content="@Daniel Höflehner" />
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Daniel Höflehner"},"dateModified":"2025-07-18T00:00:00+02:00","datePublished":"2025-07-18T00:00:00+02:00","description":"Reading values continuously from a light sensor.","headline":"Rust Embedded: Light Sensor - Part 1","mainEntityOfPage":{"@type":"WebPage","@id":"https://danielhoeflehner.tech/2025/07/18/rust-embedded-light-sensor"},"url":"https://danielhoeflehner.tech/2025/07/18/rust-embedded-light-sensor"}</script>
+<!-- End Jekyll SEO tag -->
+
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="32x32"
+      href="/assets/images/favicon-32x32.png"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="16x16"
+      href="/assets/images/favicon-16x16.png"
+    />
+    <link rel="manifest" href="/site.webmanifest" />
+    <link rel="preconnect" href="https://fonts.bunny.net" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.bunny.net/css?family=inter:300,400,500,700&display=swap"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.1/styles/github-dark.min.css"
+    />
+    <link rel="stylesheet" href="/assets/css/styles.css" />
+    <script defer data-domain="danielhoeflehner.tech" src="https://analytics.danielhoeflehner.tech/js/script.js"></script>
+  </head>
+  <body
+    class="min-h-screen antialiased text-slate-500 dark:text-slate-400 bg-white dark:bg-slate-900"
+  >
+    <header class="py-6 px-2 md:px-0 max-w-prose mx-auto lg:prose-lg">
+      <nav class="flex items-center justify-between">
+  <a href="/" class="dark:hover:text-white dark:hover:underline ">Daniel's Blog</a>
+  <ul class="flex gap-x-4">
+    
+      <li>
+        <a href="/posts" class="dark:hover:text-white dark:hover:underline ">Posts</a>
+      </li>
+    
+      <li>
+        <a href="/projects" class="dark:hover:text-white dark:hover:underline ">Projects</a>
+      </li>
+    
+  </ul>
+</nav>
+    </header>
+    <main
+      class="mt-8 px-2 md:px-0 prose prose-slate dark:prose-invert mx-auto lg:prose-lg"
+    >
+      <article>
+  <time class="dark:text-slate-400 text-sm"
+    >18 Jul 2025</time
+  >
+  <h1>Rust Embedded: Light Sensor - Part 1</h1>
+  <div class="mb-3">
+    
+    <span
+      class="ml-1 inline-block align-middle rounded-full px-2 bg-slate-300 text-sm text-slate-700"
+      >rust</span
+    >
+    
+    <span
+      class="ml-1 inline-block align-middle rounded-full px-2 bg-slate-300 text-sm text-slate-700"
+      >embedded</span
+    >
+    
+    <span
+      class="ml-1 inline-block align-middle rounded-full px-2 bg-slate-300 text-sm text-slate-700"
+      >stm32f3</span
+    >
+    
+  </div>
+  <p>I wanted build a little project where i could use the ADC of the STM32F303VC microcontroller. I came up with the idea to read values from a light sensor. So the light sensor is connected to the microcontroller via pin 0 of port A. We need to convert the voltage on this pin to digital values. That is where the ADC comes in - we convert from <em>analog</em> to <em>digital</em>.</p>
+
+<p>Code on <a href="https://github.com/eisnstein/rust-embedded-light-sensor/blob/main" target="\_blank" rel="noopener noreferrer">GitHub</a>.</p>
+
+<p>Here is the full code example for our program with the light sensor. Further down we’ll go through the code in more detail.</p>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">#![no_main]</span>
+<span class="nd">#![no_std]</span>
+
+<span class="k">extern</span> <span class="k">crate</span> <span class="n">panic_halt</span><span class="p">;</span>
+
+<span class="k">use</span> <span class="nn">cortex_m_rt</span><span class="p">::</span><span class="n">entry</span><span class="p">;</span>
+<span class="k">use</span> <span class="nn">cortex_m_semihosting</span><span class="p">::{</span><span class="k">self</span><span class="p">,</span> <span class="n">hprintln</span><span class="p">};</span>
+<span class="k">use</span> <span class="nn">stm32f3</span><span class="p">::</span><span class="n">stm32f303</span><span class="p">;</span>
+
+<span class="nd">#[entry]</span>
+<span class="k">fn</span> <span class="nf">main</span><span class="p">()</span> <span class="k">-&gt;</span> <span class="o">!</span> <span class="p">{</span>
+    <span class="c1">// You should see that in your openocd output</span>
+    <span class="nd">hprintln!</span><span class="p">(</span><span class="s">"Hello from Discovery"</span><span class="p">);</span>
+
+    <span class="k">let</span> <span class="n">peripherals</span> <span class="o">=</span> <span class="o">&amp;</span><span class="nn">stm32f303</span><span class="p">::</span><span class="nn">Peripherals</span><span class="p">::</span><span class="nf">take</span><span class="p">()</span><span class="nf">.unwrap</span><span class="p">();</span>
+    <span class="k">let</span> <span class="n">cp</span> <span class="o">=</span> <span class="nn">cortex_m</span><span class="p">::</span><span class="nn">Peripherals</span><span class="p">::</span><span class="nf">take</span><span class="p">()</span><span class="nf">.unwrap</span><span class="p">();</span>
+
+    <span class="k">let</span> <span class="k">mut</span> <span class="n">delay</span> <span class="o">=</span> <span class="nn">cortex_m</span><span class="p">::</span><span class="nn">delay</span><span class="p">::</span><span class="nn">Delay</span><span class="p">::</span><span class="nf">new</span><span class="p">(</span><span class="n">cp</span><span class="py">.SYST</span><span class="p">,</span> <span class="mi">8_000_000</span><span class="p">);</span>
+    <span class="k">let</span> <span class="n">rcc</span> <span class="o">=</span> <span class="o">&amp;</span><span class="n">peripherals</span><span class="py">.RCC</span><span class="p">;</span>
+    <span class="k">let</span> <span class="n">gpioa</span> <span class="o">=</span> <span class="o">&amp;</span><span class="n">peripherals</span><span class="py">.GPIOA</span><span class="p">;</span>
+    <span class="k">let</span> <span class="n">adc1</span> <span class="o">=</span> <span class="o">&amp;</span><span class="n">peripherals</span><span class="py">.ADC1</span><span class="p">;</span>
+    <span class="k">let</span> <span class="n">common_adc12</span> <span class="o">=</span> <span class="o">&amp;</span><span class="n">peripherals</span><span class="py">.ADC1_2</span><span class="p">;</span>
+
+    <span class="c1">// Configure Port A Pin 0</span>
+
+    <span class="c1">// Set HSI clock on</span>
+    <span class="n">rcc</span><span class="py">.cr</span><span class="nf">.write</span><span class="p">(|</span><span class="n">w</span><span class="p">|</span> <span class="n">w</span><span class="nf">.hsion</span><span class="p">()</span><span class="nf">.on</span><span class="p">());</span>
+    <span class="c1">// Set Pin 0 to analog input</span>
+    <span class="n">gpioa</span><span class="py">.moder</span><span class="nf">.write</span><span class="p">(|</span><span class="n">w</span><span class="p">|</span> <span class="n">w</span><span class="nf">.moder0</span><span class="p">()</span><span class="nf">.analog</span><span class="p">());</span>
+    <span class="c1">// Set Pin 0 to floating (disable schmitt trigger)</span>
+    <span class="n">gpioa</span><span class="py">.pupdr</span><span class="nf">.write</span><span class="p">(|</span><span class="n">w</span><span class="p">|</span> <span class="n">w</span><span class="nf">.pupdr0</span><span class="p">()</span><span class="nf">.floating</span><span class="p">());</span>
+
+    <span class="c1">// Enable GPIO Port A clock</span>
+    <span class="n">rcc</span><span class="py">.ahbenr</span><span class="nf">.write</span><span class="p">(|</span><span class="n">w</span><span class="p">|</span> <span class="n">w</span><span class="nf">.iopaen</span><span class="p">()</span><span class="nf">.enabled</span><span class="p">());</span>
+    <span class="c1">// Enable ADC1 clock</span>
+    <span class="n">rcc</span><span class="py">.ahbenr</span><span class="nf">.write</span><span class="p">(|</span><span class="n">w</span><span class="p">|</span> <span class="n">w</span><span class="nf">.adc12en</span><span class="p">()</span><span class="nf">.enabled</span><span class="p">());</span>
+    <span class="c1">// Set ADC clock mode</span>
+    <span class="n">common_adc12</span><span class="py">.ccr</span><span class="nf">.write</span><span class="p">(|</span><span class="n">w</span><span class="p">|</span> <span class="n">w</span><span class="nf">.ckmode</span><span class="p">()</span><span class="nf">.sync_div4</span><span class="p">());</span>
+
+    <span class="c1">// Configure ADC1</span>
+
+    <span class="c1">// Set single conversion mode</span>
+    <span class="n">adc1</span><span class="py">.cfgr</span><span class="nf">.write</span><span class="p">(|</span><span class="n">w</span><span class="p">|</span> <span class="n">w</span><span class="nf">.cont</span><span class="p">()</span><span class="nf">.single</span><span class="p">());</span>
+    <span class="c1">// 12bit data resolution</span>
+    <span class="n">adc1</span><span class="py">.cfgr</span><span class="nf">.write</span><span class="p">(|</span><span class="n">w</span><span class="p">|</span> <span class="n">w</span><span class="nf">.res</span><span class="p">()</span><span class="nf">.bits10</span><span class="p">());</span>
+    <span class="c1">// Select channel 1</span>
+    <span class="n">adc1</span><span class="py">.sqr1</span><span class="nf">.write</span><span class="p">(|</span><span class="n">w</span><span class="p">|</span> <span class="k">unsafe</span> <span class="p">{</span> <span class="n">w</span><span class="nf">.sq1</span><span class="p">()</span><span class="nf">.bits</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="p">});</span>
+    <span class="c1">// Set sample time</span>
+    <span class="n">adc1</span><span class="py">.smpr1</span><span class="nf">.write</span><span class="p">(|</span><span class="n">w</span><span class="p">|</span> <span class="n">w</span><span class="nf">.smp1</span><span class="p">()</span><span class="nf">.cycles601_5</span><span class="p">());</span>
+
+    <span class="c1">// Reset control register</span>
+    <span class="n">adc1</span><span class="py">.cr</span><span class="nf">.reset</span><span class="p">();</span>
+
+    <span class="nd">hprintln!</span><span class="p">(</span><span class="s">"Enable vrs"</span><span class="p">);</span>
+    <span class="c1">// Enable voltage regulation sequence.</span>
+    <span class="c1">// This has to be done before the calibration.</span>
+    <span class="n">adc1</span><span class="py">.cr</span><span class="nf">.write</span><span class="p">(|</span><span class="n">w</span><span class="p">|</span> <span class="n">w</span><span class="nf">.advregen</span><span class="p">()</span><span class="nf">.intermediate</span><span class="p">());</span>
+    <span class="n">adc1</span><span class="py">.cr</span><span class="nf">.write</span><span class="p">(|</span><span class="n">w</span><span class="p">|</span> <span class="n">w</span><span class="nf">.advregen</span><span class="p">()</span><span class="nf">.enabled</span><span class="p">());</span>
+
+    <span class="c1">// Wait for the startup time of the ADC voltage regulator</span>
+    <span class="c1">// see STM32f303 reference manual section 15.3.6</span>
+    <span class="n">delay</span><span class="nf">.delay_us</span><span class="p">(</span><span class="mi">80</span><span class="p">);</span>
+
+    <span class="nd">hprintln!</span><span class="p">(</span><span class="s">"Start calibration"</span><span class="p">);</span>
+    <span class="c1">// Start calibration</span>
+    <span class="n">adc1</span><span class="py">.cr</span><span class="nf">.write</span><span class="p">(|</span><span class="n">w</span><span class="p">|</span> <span class="n">w</span><span class="nf">.adcaldif</span><span class="p">()</span><span class="nf">.single_ended</span><span class="p">());</span>
+    <span class="n">adc1</span><span class="py">.cr</span><span class="nf">.write</span><span class="p">(|</span><span class="n">w</span><span class="p">|</span> <span class="n">w</span><span class="nf">.adcal</span><span class="p">()</span><span class="nf">.calibration</span><span class="p">());</span>
+    <span class="k">while</span> <span class="n">adc1</span><span class="py">.cr</span><span class="nf">.read</span><span class="p">()</span><span class="nf">.adcal</span><span class="p">()</span><span class="nf">.is_calibration</span><span class="p">()</span> <span class="p">{</span>
+        <span class="nd">hprintln!</span><span class="p">(</span><span class="s">"hoho"</span><span class="p">);</span>
+    <span class="p">}</span>
+
+    <span class="nd">hprintln!</span><span class="p">(</span><span class="s">"Disable vrs"</span><span class="p">);</span>
+    <span class="c1">// Disable voltage regulation sequence.</span>
+    <span class="n">adc1</span><span class="py">.cr</span><span class="nf">.write</span><span class="p">(|</span><span class="n">w</span><span class="p">|</span> <span class="n">w</span><span class="nf">.advregen</span><span class="p">()</span><span class="nf">.intermediate</span><span class="p">());</span>
+    <span class="n">adc1</span><span class="py">.cr</span><span class="nf">.write</span><span class="p">(|</span><span class="n">w</span><span class="p">|</span> <span class="n">w</span><span class="nf">.advregen</span><span class="p">()</span><span class="nf">.disabled</span><span class="p">());</span>
+
+    <span class="nd">hprintln!</span><span class="p">(</span><span class="s">"Enable adc"</span><span class="p">);</span>
+    <span class="c1">// Enable the ADC</span>
+    <span class="n">adc1</span><span class="py">.cr</span><span class="nf">.write</span><span class="p">(|</span><span class="n">w</span><span class="p">|</span> <span class="n">w</span><span class="nf">.aden</span><span class="p">()</span><span class="nf">.enabled</span><span class="p">());</span>
+    <span class="k">while</span> <span class="n">adc1</span><span class="py">.isr</span><span class="nf">.read</span><span class="p">()</span><span class="nf">.adrdy</span><span class="p">()</span><span class="nf">.is_not_ready</span><span class="p">()</span> <span class="p">{}</span>
+
+    <span class="nd">hprintln!</span><span class="p">(</span><span class="s">"Start loop"</span><span class="p">);</span>
+    <span class="k">loop</span> <span class="p">{</span>
+        <span class="c1">// Start conversion and wait until ECO and EOS is set.</span>
+        <span class="n">adc1</span><span class="py">.cr</span><span class="nf">.write</span><span class="p">(|</span><span class="n">w</span><span class="p">|</span> <span class="n">w</span><span class="nf">.adstart</span><span class="p">()</span><span class="nf">.start_conversion</span><span class="p">());</span>
+        <span class="k">while</span> <span class="n">adc1</span><span class="py">.isr</span><span class="nf">.read</span><span class="p">()</span><span class="nf">.eoc</span><span class="p">()</span><span class="nf">.is_not_complete</span><span class="p">()</span> <span class="o">&amp;&amp;</span> <span class="n">adc1</span><span class="py">.isr</span><span class="nf">.read</span><span class="p">()</span><span class="nf">.eos</span><span class="p">()</span><span class="nf">.is_not_complete</span><span class="p">()</span> <span class="p">{}</span>
+
+        <span class="c1">// Read data from data register</span>
+        <span class="k">let</span> <span class="n">data</span> <span class="o">=</span> <span class="n">adc1</span><span class="py">.dr</span><span class="nf">.read</span><span class="p">()</span><span class="nf">.rdata</span><span class="p">()</span><span class="nf">.bits</span><span class="p">();</span>
+
+        <span class="nd">hprintln!</span><span class="p">(</span><span class="s">"{}"</span><span class="p">,</span> <span class="n">data</span><span class="p">);</span>
+
+        <span class="c1">// Wait 100ms for next conversion</span>
+        <span class="n">delay</span><span class="nf">.delay_ms</span><span class="p">(</span><span class="mi">100</span><span class="p">);</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>To be able to use a button to toggle the LED state we need to use one more GPIO port. We could go the naive way and 
+implement a loop which checks, if the button is clicked and - depending on the state - update 
+the output for the LED. But we are not going this way and do it the right way - by leveraging interrupts. Basically we 
+register a pin (which will be connected to the button) as trigger for an interrupt. That will execute the interrupt handler 
+where the actual toggeling of the LED will happen.</p>
+
+<p>On to the actual implementation.</p>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">static</span> <span class="n">EXT_I</span><span class="p">:</span> <span class="n">Mutex</span><span class="o">&lt;</span><span class="n">RefCell</span><span class="o">&lt;</span><span class="nb">Option</span><span class="o">&lt;</span><span class="n">EXTI</span><span class="o">&gt;&gt;&gt;</span> <span class="o">=</span> <span class="nn">Mutex</span><span class="p">::</span><span class="nf">new</span><span class="p">(</span><span class="nn">RefCell</span><span class="p">::</span><span class="nf">new</span><span class="p">(</span><span class="nb">None</span><span class="p">));</span>
+<span class="k">static</span> <span class="n">GPIO_E</span><span class="p">:</span> <span class="n">Mutex</span><span class="o">&lt;</span><span class="n">RefCell</span><span class="o">&lt;</span><span class="nb">Option</span><span class="o">&lt;</span><span class="n">GPIOE</span><span class="o">&gt;&gt;&gt;</span> <span class="o">=</span> <span class="nn">Mutex</span><span class="p">::</span><span class="nf">new</span><span class="p">(</span><span class="nn">RefCell</span><span class="p">::</span><span class="nf">new</span><span class="p">(</span><span class="nb">None</span><span class="p">));</span>
+</code></pre></div></div>
+
+<p>Here is the thing. We are <em>taking</em> the <code class="language-plaintext highlighter-rouge">Peripherals</code> in our main function. As I already stated in <a href="/2025/01/06/rust-embedded-blinky-part-2">Part 2</a>, we only can <em>take</em> the <code class="language-plaintext highlighter-rouge">Peripherals</code> once in the whole program.
+However, if we want to toggle the LED in another function - our interrupt handler - we need a way to access the GPIO port from there. The solution is, that we need to create a static “global” variable - in our case 2: <code class="language-plaintext highlighter-rouge">EXT_I</code> and <code class="language-plaintext highlighter-rouge">GPIO_E</code>, which we can then access everywhere. More on that later.</p>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">let</span> <span class="n">peripherals</span> <span class="o">=</span> <span class="nn">stm32f303</span><span class="p">::</span><span class="nn">Peripherals</span><span class="p">::</span><span class="nf">take</span><span class="p">()</span><span class="nf">.unwrap</span><span class="p">();</span>
+
+<span class="k">let</span> <span class="n">syscfg</span> <span class="o">=</span> <span class="o">&amp;</span><span class="n">peripherals</span><span class="py">.SYSCFG</span><span class="p">;</span>
+<span class="k">let</span> <span class="n">exti</span> <span class="o">=</span> <span class="o">&amp;</span><span class="n">peripherals</span><span class="py">.EXTI</span><span class="p">;</span>
+
+<span class="c1">// Initialize EXT interrupt</span>
+
+<span class="c1">// Set Pin 0 from Port A as input for EXTI0</span>
+<span class="n">syscfg</span><span class="py">.exticr1</span><span class="nf">.write</span><span class="p">(|</span><span class="n">w</span><span class="p">|</span> <span class="n">w</span><span class="nf">.exti0</span><span class="p">()</span><span class="nf">.pa0</span><span class="p">());</span>
+<span class="c1">// Disable mask on EXTI0</span>
+<span class="n">exti</span><span class="py">.imr1</span><span class="nf">.write</span><span class="p">(|</span><span class="n">w</span><span class="p">|</span> <span class="n">w</span><span class="nf">.mr0</span><span class="p">()</span><span class="nf">.set_bit</span><span class="p">());</span>
+<span class="c1">// Set rising trigger disabled</span>
+<span class="n">exti</span><span class="py">.rtsr1</span><span class="nf">.write</span><span class="p">(|</span><span class="n">w</span><span class="p">|</span> <span class="n">w</span><span class="nf">.tr0</span><span class="p">()</span><span class="nf">.disabled</span><span class="p">());</span>
+<span class="c1">// Set falling trigger enabled</span>
+<span class="n">exti</span><span class="py">.ftsr1</span><span class="nf">.write</span><span class="p">(|</span><span class="n">w</span><span class="p">|</span> <span class="n">w</span><span class="nf">.tr0</span><span class="p">()</span><span class="nf">.enabled</span><span class="p">());</span>
+<span class="c1">// Enable interrupt</span>
+<span class="k">unsafe</span> <span class="p">{</span>
+    <span class="nn">NVIC</span><span class="p">::</span><span class="nf">unmask</span><span class="p">(</span><span class="nn">stm32f303</span><span class="p">::</span><span class="nn">Interrupt</span><span class="p">::</span><span class="n">EXTI0</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>My idea was, that I want to press a button, which is connected to a pin on the microcontroller, and toggle the LED. So when I press the button, an event should be emitted, which then triggers the call of a function where the toggle logic is executed. For that, <em>interrupts</em> exist. Via the <em>extended interrupts and events controller</em> we can configure external and internal interrupts. In our case it is an external interrupt.</p>
+
+<p>You can find a description on how to configure an interrupt under <strong>14. Interrupts and events</strong> (14.2.5 to be precise) from the <a href="/2024/06/03/rust-embedded-setup-part-0">STM32 Reference Manual</a>.</p>
+
+<p>We chose Pin 0 from Port A as our input where the button is going to be connected. So we configure EXTI0 to be triggered by Pin 0 from Port A by <code class="language-plaintext highlighter-rouge">w.exti0().pa0()</code> on the <em>SYSCFG external interrupt configuration register 1</em> (exticr1). Under 14.2.6 you can find which Pins from which Ports map to which EXT interrupt event lines. Next we need to set bit 0 in the <em>interrupt mask register 1</em> to 1 - basically enabling the external interrupt line 0 (where our button is connected to).
+We want our event to trigger on falling edge - so we disable <em>rising trigger</em> and enable <em>falling trigger</em>.
+Last but not least we need to enable the EXTI0 interrupt in the <em>Nested vectored interrupt controller</em> (NVIC).</p>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">let</span> <span class="n">rcc</span> <span class="o">=</span> <span class="o">&amp;</span><span class="n">peripherals</span><span class="py">.RCC</span><span class="p">;</span>
+<span class="c1">// Set HSI clock on</span>
+<span class="n">rcc</span><span class="py">.cr</span><span class="nf">.write</span><span class="p">(|</span><span class="n">w</span><span class="p">|</span> <span class="n">w</span><span class="nf">.hsion</span><span class="p">()</span><span class="nf">.set_bit</span><span class="p">());</span>
+<span class="c1">// Enable GPIO Port E and A clock</span>
+<span class="n">rcc</span><span class="py">.ahbenr</span><span class="nf">.write</span><span class="p">(|</span><span class="n">w</span><span class="p">|</span> <span class="n">w</span><span class="nf">.iopaen</span><span class="p">()</span><span class="nf">.enabled</span><span class="p">());</span>
+<span class="n">rcc</span><span class="py">.ahbenr</span><span class="nf">.write</span><span class="p">(|</span><span class="n">w</span><span class="p">|</span> <span class="n">w</span><span class="nf">.iopeen</span><span class="p">()</span><span class="nf">.enabled</span><span class="p">());</span>
+<span class="c1">// Enable SYSCFG clock</span>
+<span class="n">rcc</span><span class="py">.apb2enr</span><span class="nf">.write</span><span class="p">(|</span><span class="n">w</span><span class="p">|</span> <span class="n">w</span><span class="nf">.syscfgen</span><span class="p">()</span><span class="nf">.enabled</span><span class="p">());</span>
+
+<span class="k">let</span> <span class="n">gpioa</span> <span class="o">=</span> <span class="o">&amp;</span><span class="n">peripherals</span><span class="py">.GPIOA</span><span class="p">;</span>
+<span class="c1">// Set Pin 0 to input</span>
+<span class="n">gpioa</span><span class="py">.moder</span><span class="nf">.write</span><span class="p">(|</span><span class="n">w</span><span class="p">|</span> <span class="n">w</span><span class="nf">.moder0</span><span class="p">()</span><span class="nf">.input</span><span class="p">());</span>
+
+<span class="k">let</span> <span class="n">gpioe</span> <span class="o">=</span> <span class="o">&amp;</span><span class="n">peripherals</span><span class="py">.GPIOE</span><span class="p">;</span>
+<span class="c1">// Set Pin 9 to output</span>
+<span class="n">gpioe</span><span class="py">.moder</span><span class="nf">.write</span><span class="p">(|</span><span class="n">w</span><span class="p">|</span> <span class="n">w</span><span class="nf">.moder9</span><span class="p">()</span><span class="nf">.output</span><span class="p">());</span>
+</code></pre></div></div>
+
+<p>Next we again need to configure the system clock and enable GPIO Port E and A. We use Port E (output) to connect to the LED and Port A (input) to connect to the button. 
+Important is to also enable the SYSCFG clock in the <em>APB2 peripheral clock enable register</em>. The EXTI controller relies on the SYSCFG module to route 
+GPIO pins to specific EXTI lines. Without enabling the SYSCFG clock the external interrupt configuration will not work correctly.</p>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// Put EXTI and GPIOE into the global variable to be able to</span>
+<span class="c1">// access Port E in the EXTI0 interrupt handler.</span>
+<span class="nn">cortex_m</span><span class="p">::</span><span class="nn">interrupt</span><span class="p">::</span><span class="nf">free</span><span class="p">(|</span><span class="n">cs</span><span class="p">|</span> <span class="p">{</span>
+    <span class="n">EXT_I</span><span class="nf">.borrow</span><span class="p">(</span><span class="n">cs</span><span class="p">)</span><span class="nf">.replace</span><span class="p">(</span><span class="nf">Some</span><span class="p">(</span><span class="n">peripherals</span><span class="py">.EXTI</span><span class="p">));</span>
+    <span class="n">GPIO_E</span><span class="nf">.borrow</span><span class="p">(</span><span class="n">cs</span><span class="p">)</span><span class="nf">.replace</span><span class="p">(</span><span class="nf">Some</span><span class="p">(</span><span class="n">peripherals</span><span class="py">.GPIOE</span><span class="p">));</span>
+<span class="p">});</span>
+
+<span class="k">loop</span> <span class="p">{}</span>
+</code></pre></div></div>
+
+<p>At the beginning of our program, we defined to static global variables. To make sure, that only always one actor can access those values, we put them in a mutex. 
+We have to use an Option there, because initially we didn’t have the values. Now, at the end of our programm we have those values - <code class="language-plaintext highlighter-rouge">EXTI</code> and <code class="language-plaintext highlighter-rouge">GPIOE</code> peripherals - 
+which we place into our static vars. We do that within an callback to the <code class="language-plaintext highlighter-rouge">cortex_::interrupt::free</code> function. This disables all interrupts temporarily. 
+Last we call <code class="language-plaintext highlighter-rouge">loop {}</code> to run an endless loop and wait for events from our button.</p>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">#[interrupt]</span>
+<span class="k">fn</span> <span class="nf">EXTI0</span><span class="p">()</span> <span class="p">{</span>
+    <span class="nn">cortex_m</span><span class="p">::</span><span class="nn">interrupt</span><span class="p">::</span><span class="nf">free</span><span class="p">(|</span><span class="n">cs</span><span class="p">|</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="k">let</span> <span class="nf">Some</span><span class="p">(</span><span class="n">exti</span><span class="p">)</span> <span class="o">=</span> <span class="n">EXT_I</span><span class="nf">.borrow</span><span class="p">(</span><span class="n">cs</span><span class="p">)</span><span class="nf">.borrow</span><span class="p">()</span><span class="nf">.deref</span><span class="p">()</span> <span class="p">{</span>
+            <span class="c1">// Clear pending register</span>
+            <span class="n">exti</span><span class="py">.pr1</span><span class="nf">.write</span><span class="p">(|</span><span class="n">w</span><span class="p">|</span> <span class="n">w</span><span class="nf">.pr0</span><span class="p">()</span><span class="nf">.set_bit</span><span class="p">());</span>
+        <span class="p">}</span>
+
+        <span class="k">if</span> <span class="k">let</span> <span class="nf">Some</span><span class="p">(</span><span class="n">gpioe</span><span class="p">)</span> <span class="o">=</span> <span class="n">GPIO_E</span><span class="nf">.borrow</span><span class="p">(</span><span class="n">cs</span><span class="p">)</span><span class="nf">.borrow</span><span class="p">()</span><span class="nf">.deref</span><span class="p">()</span> <span class="p">{</span>
+            <span class="c1">// Read Port E Pin 9 output data register</span>
+            <span class="k">if</span> <span class="n">gpioe</span><span class="py">.odr</span><span class="nf">.read</span><span class="p">()</span><span class="nf">.odr9</span><span class="p">()</span><span class="nf">.bit_is_set</span><span class="p">()</span> <span class="p">{</span>
+                <span class="c1">// Write to bit reset register to set Pin 9 Low</span>
+                <span class="n">gpioe</span><span class="py">.bsrr</span><span class="nf">.write</span><span class="p">(|</span><span class="n">w</span><span class="p">|</span> <span class="n">w</span><span class="nf">.br9</span><span class="p">()</span><span class="nf">.set_bit</span><span class="p">());</span>
+            <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+                <span class="c1">// Write to bit set register to set Pin 9 High</span>
+                <span class="n">gpioe</span><span class="py">.bsrr</span><span class="nf">.write</span><span class="p">(|</span><span class="n">w</span><span class="p">|</span> <span class="n">w</span><span class="nf">.bs9</span><span class="p">()</span><span class="nf">.set_bit</span><span class="p">());</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+    <span class="p">})</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>The <code class="language-plaintext highlighter-rouge">EXTI0</code> interrupt handler is the function that gets called when the EXTI0 interrupt is triggered. Important here is, that the function actually is called <code class="language-plaintext highlighter-rouge">EXTI0</code> and the <code class="language-plaintext highlighter-rouge">#[interrupt]</code> attribute.
+Like before we call the <code class="language-plaintext highlighter-rouge">cortex_m::interrupt::free</code> function to execute the enclosed closure in a critical section, ensuring that no other interrupts can occur during its execution.
+First we need to clear bit 0 of the <em>pending register</em> (<code class="language-plaintext highlighter-rouge">pr1</code>). This acknowledges the interrupt and allows it to be triggered again in the future.
+Second, we toggle the state of Port E Pin 9. The output data register (<code class="language-plaintext highlighter-rouge">odr</code>) for Port E Pin 9 is read to check if the pin is currently set (high). If the pin is set, the bit reset register (<code class="language-plaintext highlighter-rouge">bsrr</code>) is written to set Pin 9 low. If the pin is not set, the bit set register (<code class="language-plaintext highlighter-rouge">bsrr</code>) is written to set Pin 9 high.</p>
+
+
+</article>
+
+    </main>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.1/highlight.min.js"></script>
+    <script>
+      hljs.highlightAll()
+    </script>
+  </body>
+</html>

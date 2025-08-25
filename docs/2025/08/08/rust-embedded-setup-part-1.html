@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#072344" />
+    <meta
+      name="keywords"
+      content="blog, programming, functional, tutorials, csharp, rust, typescript, elixir"
+    />
+    <!-- Begin Jekyll SEO tag v2.8.0 -->
+<title>Rust Embedded: Setup - Part 1 | Daniel’s Blog</title>
+<meta name="generator" content="Jekyll v4.3.4" />
+<meta property="og:title" content="Rust Embedded: Setup - Part 1" />
+<meta name="author" content="Daniel Höflehner" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="Setup for programming the ST Discovery Board 3 with Rust on Windows 10" />
+<meta property="og:description" content="Setup for programming the ST Discovery Board 3 with Rust on Windows 10" />
+<link rel="canonical" href="https://danielhoeflehner.tech/2025/08/08/rust-embedded-setup-part-1" />
+<meta property="og:url" content="https://danielhoeflehner.tech/2025/08/08/rust-embedded-setup-part-1" />
+<meta property="og:site_name" content="Daniel’s Blog" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2025-08-08T00:00:00+02:00" />
+<meta name="twitter:card" content="summary" />
+<meta property="twitter:title" content="Rust Embedded: Setup - Part 1" />
+<meta name="twitter:site" content="@eisnstein" />
+<meta name="twitter:creator" content="@Daniel Höflehner" />
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Daniel Höflehner"},"dateModified":"2025-08-08T00:00:00+02:00","datePublished":"2025-08-08T00:00:00+02:00","description":"Setup for programming the ST Discovery Board 3 with Rust on Windows 10","headline":"Rust Embedded: Setup - Part 1","mainEntityOfPage":{"@type":"WebPage","@id":"https://danielhoeflehner.tech/2025/08/08/rust-embedded-setup-part-1"},"url":"https://danielhoeflehner.tech/2025/08/08/rust-embedded-setup-part-1"}</script>
+<!-- End Jekyll SEO tag -->
+
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="32x32"
+      href="/assets/images/favicon-32x32.png"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="16x16"
+      href="/assets/images/favicon-16x16.png"
+    />
+    <link rel="manifest" href="/site.webmanifest" />
+    <link rel="preconnect" href="https://fonts.bunny.net" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.bunny.net/css?family=inter:300,400,500,700&display=swap"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.1/styles/github-dark.min.css"
+    />
+    <link rel="stylesheet" href="/assets/css/styles.css" />
+    <script defer data-domain="danielhoeflehner.tech" src="https://analytics.danielhoeflehner.tech/js/script.js"></script>
+  </head>
+  <body
+    class="min-h-screen antialiased text-slate-500 dark:text-slate-400 bg-white dark:bg-slate-900"
+  >
+    <header class="py-6 px-2 md:px-0 max-w-prose mx-auto lg:prose-lg">
+      <nav class="flex items-center justify-between">
+  <a href="/" class="dark:hover:text-white dark:hover:underline ">Daniel's Blog</a>
+  <ul class="flex gap-x-4">
+    
+      <li>
+        <a href="/posts" class="dark:hover:text-white dark:hover:underline ">Posts</a>
+      </li>
+    
+      <li>
+        <a href="/projects" class="dark:hover:text-white dark:hover:underline ">Projects</a>
+      </li>
+    
+  </ul>
+</nav>
+    </header>
+    <main
+      class="mt-8 px-2 md:px-0 prose prose-slate dark:prose-invert mx-auto lg:prose-lg"
+    >
+      <article>
+  <time class="dark:text-slate-400 text-sm"
+    >08 Aug 2025</time
+  >
+  <h1>Rust Embedded: Setup - Part 1</h1>
+  <div class="mb-3">
+    
+    <span
+      class="ml-1 inline-block align-middle rounded-full px-2 bg-slate-300 text-sm text-slate-700"
+      >rust</span
+    >
+    
+    <span
+      class="ml-1 inline-block align-middle rounded-full px-2 bg-slate-300 text-sm text-slate-700"
+      >embedded</span
+    >
+    
+    <span
+      class="ml-1 inline-block align-middle rounded-full px-2 bg-slate-300 text-sm text-slate-700"
+      >arm</span
+    >
+    
+  </div>
+  <p>If you have followed <a href="/2024/06/03/rust-embedded-setup-part-0">Part 0</a> of the setup, you are ready to build and flash your first program to the board. For now it is not about the code itself, but how to get it running on the microcontroller. The setup for a very simple program that will light up an on-board LED looks as follows.</p>
+
+<p><em>This post was written with the help of ChatGPT. By that I mean, that I let proof read ChatGPT parts of the text, and, in case, used optimizations that ChatGPT offered.</em></p>
+
+<h3 id="code-structure">Code structure</h3>
+
+<p>First create a new folder, eg. <code class="language-plaintext highlighter-rouge">basic-led-on</code>, and then setup the subfolders and files like the following:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>\-- basic-led-on
+    \-- .cargo
+        +-- config.toml
+    \-- .vscode
+        +-- settings.json
+    \-- src
+        +-- main.rs
+    +-- Cargo.toml
+    +-- memory.x
+    +-- openocd.gdb
+</code></pre></div></div>
+
+<p>Let’s go over each file and discuss it in more detail.</p>
+
+<p><strong>.cargo/config.toml</strong></p>
+
+<div class="language-toml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nn">[target.thumbv7em-none-eabihf]</span>
+<span class="py">runner</span> <span class="p">=</span> <span class="s">"arm-none-eabi-gdb -q -x openocd.gdb"</span>
+<span class="py">rustflags</span> <span class="p">=</span> <span class="p">[</span><span class="s">"-C"</span><span class="p">,</span> <span class="py">"link-arg</span><span class="p">=</span><span class="err">-Tlink.x</span><span class="s">"]</span><span class="err">
+</span>
+<span class="p">[</span><span class="err">build</span><span class="p">]</span>
+<span class="py">target</span> <span class="p">=</span> <span class="s">"thumbv7em-none-eabihf"</span>
+</code></pre></div></div>
+
+<p>The <em>config.toml</em> file tells Cargo how to build for our microcontroller’s architecture (cross-compiling) and how to run the compiled program. In <a href="/2024/06/03/rust-embedded-setup-part-0">Part 0</a> we installed the <code class="language-plaintext highlighter-rouge">thumbv7em-none-eabihf</code> <a href="https://doc.rust-lang.org/cargo/appendix/glossary.html#target">target triple</a>, which matches our board. The [build] section sets this as the default target, so Cargo will always compile for it. Under [target.thumbv7em-none-eabihf], we configure two things:</p>
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">runner</code>: the command Cargo runs when you do <code class="language-plaintext highlighter-rouge">cargo run</code>. Here it launches <code class="language-plaintext highlighter-rouge">arm-none-eabi-gdb</code> with a script that flashes the program to the board. <code class="language-plaintext highlighter-rouge">arm-none-eabi-gdb</code> was installed with the ARM GNU Toolchain from part 0.</li>
+  <li><code class="language-plaintext highlighter-rouge">rustflags</code>: extra options for the compiler, in this case telling the linker to use our <em>link.x</em> script to place code and data correctly in memory.</li>
+</ul>
+
+<p>The <em>link.x</em> file is usually provided by the <strong>embedded support crate</strong> you’re using - in our case by the <a href="https://docs.rs/cortex-m-rt/latest/cortex_m_rt/" target="\_blank" rel="noopener noreferrer">cortex-m-rt</a> crate.</p>
+
+<p>Here’s how it works:</p>
+
+<ul>
+  <li>The <strong>cortex-m-rt</strong> crate ships with a <a href="https://github.com/rust-embedded/cortex-m/blob/master/cortex-m-rt/link.x.in" target="\_blank" rel="noopener noreferrer">linker script template</a>.</li>
+  <li>When you build your project, Cargo automatically copies that template into your build directory and renames it <em>link.x</em>.</li>
+  <li>The script describes how the compiled program should be laid out in memory: where to put <code class="language-plaintext highlighter-rouge">.text</code> (your code), <code class="language-plaintext highlighter-rouge">.data</code> (initialized variables), <code class="language-plaintext highlighter-rouge">.bss</code> (zeroed variables), stack, and interrupt vectors.</li>
+  <li>The <strong>cortex-m-rt</strong> crate expects the user to provide a <a href="https://docs.rs/cortex-m-rt/latest/cortex_m_rt/#memoryx" target="\_blank" rel="noopener noreferrer">memory.x</a> file with the memory layout for your microcontroller. <strong>cortex-m-rt</strong>’s <a href="https://github.com/rust-embedded/cortex-m/blob/master/cortex-m-rt/link.x.in#L23">link.x</a> will then include it.</li>
+</ul>
+
+<p><strong>.vscode/settings.json</strong></p>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
+  </span><span class="nl">"rust-analyzer.check.allTargets"</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"rust-analyzer.cargo.target"</span><span class="p">:</span><span class="w"> </span><span class="s2">"thumbv7em-none-eabihf"</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<p>You probably want to install <a href="https://rust-analyzer.github.io/" target="\_blank" rel="noopener noreferrer">rust-analyzer</a> if you are using VSCode and add this <code class="language-plaintext highlighter-rouge">settings.json</code> file. Here’s what those lines do:</p>
+
+<ul>
+  <li>
+    <p><code class="language-plaintext highlighter-rouge">"rust-analyzer.check.allTargets": false</code>: Prevents <em>rust-analyzer</em> from trying to check <strong>every possible target</strong> in your Cargo project (which would include desktop builds). This avoids false errors since standard libraries for embedded targets are different ans our target does not have <code class="language-plaintext highlighter-rouge">std</code> support.</p>
+  </li>
+  <li>
+    <p><code class="language-plaintext highlighter-rouge">"rust-analyzer.cargo.target": "thumbv7em-none-eabihf"</code>: Ensures <em>rust-analyzer</em> runs <code class="language-plaintext highlighter-rouge">cargo check</code> and related tasks using your Cortex-M target triple, so IntelliSense matches what you’ll actually build/flash.</p>
+  </li>
+</ul>
+
+<p><strong>src/main.rs</strong></p>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">#![no_main]</span>
+<span class="nd">#![no_std]</span>
+
+<span class="k">extern</span> <span class="k">crate</span> <span class="n">panic_halt</span><span class="p">;</span>
+
+<span class="k">use</span> <span class="nn">cortex_m_rt</span><span class="p">::</span><span class="n">entry</span><span class="p">;</span>
+<span class="k">use</span> <span class="nn">cortex_m_semihosting</span><span class="p">::{</span><span class="k">self</span><span class="p">,</span> <span class="n">hprintln</span><span class="p">};</span>
+<span class="k">use</span> <span class="nn">stm32f3</span><span class="p">::</span><span class="n">stm32f303</span><span class="p">;</span>
+
+<span class="nd">#[entry]</span>
+<span class="k">fn</span> <span class="nf">main</span><span class="p">()</span> <span class="k">-&gt;</span> <span class="o">!</span> <span class="p">{</span>
+    <span class="c1">// You should see that in your openocd output</span>
+    <span class="nd">hprintln!</span><span class="p">(</span><span class="s">"Hello from Discovery"</span><span class="p">);</span>
+
+    <span class="k">let</span> <span class="n">peripherals</span> <span class="o">=</span> <span class="o">&amp;</span><span class="nn">stm32f303</span><span class="p">::</span><span class="nn">Peripherals</span><span class="p">::</span><span class="nf">take</span><span class="p">()</span><span class="nf">.unwrap</span><span class="p">();</span>
+
+    <span class="k">let</span> <span class="n">rcc</span> <span class="o">=</span> <span class="o">&amp;</span><span class="n">peripherals</span><span class="py">.RCC</span><span class="p">;</span>
+    <span class="n">rcc</span><span class="py">.ahbenr</span><span class="nf">.write</span><span class="p">(|</span><span class="n">w</span><span class="p">|</span> <span class="n">w</span><span class="nf">.iopeen</span><span class="p">()</span><span class="nf">.enabled</span><span class="p">());</span>
+
+    <span class="k">let</span> <span class="n">gpioe</span> <span class="o">=</span> <span class="o">&amp;</span><span class="n">peripherals</span><span class="py">.GPIOE</span><span class="p">;</span>
+    <span class="n">gpioe</span><span class="py">.moder</span><span class="nf">.write</span><span class="p">(|</span><span class="n">w</span><span class="p">|</span> <span class="n">w</span><span class="nf">.moder9</span><span class="p">()</span><span class="nf">.output</span><span class="p">());</span>
+    <span class="n">gpioe</span><span class="py">.odr</span><span class="nf">.write</span><span class="p">(|</span><span class="n">w</span><span class="p">|</span> <span class="n">w</span><span class="nf">.odr9</span><span class="p">()</span><span class="nf">.set_bit</span><span class="p">());</span>
+
+    <span class="k">loop</span> <span class="p">{}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>The actual program. Shortly, it takes the <em>peripherals</em>, enables GPIO Port E, sets the pin 9 of port E as <em>output</em> and sets the pin to <em>high</em> so that the LED <a href="https://www.st.com/resource/en/user_manual/um1570-discovery-kit-with-stm32f303vc-mcu-stmicroelectronics.pdf" target="\_blank" rel="noopener noreferrer">(User LED3 as documented in the User Manual of the discovery board)</a>, which is attached to this pin, lights up.</p>
+
+<p><img src="/assets/images/posts/re-setup-part-1/stm32f3_discovery_user_manual_pins.png" alt="LEDs screen shot of the user manual" />
+<em>STM32F3 Discovery Board User Manual p. 19</em></p>
+
+<p><strong>Cargo.toml</strong></p>
+
+<div class="language-toml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nn">[package]</span>
+<span class="py">name</span> <span class="p">=</span> <span class="s">"basic-led-on"</span>
+<span class="py">version</span> <span class="p">=</span> <span class="s">"0.1.0"</span>
+<span class="py">edition</span> <span class="p">=</span> <span class="s">"2024"</span>
+
+<span class="nn">[dependencies]</span>
+<span class="py">stm32f3</span> <span class="o">=</span> <span class="p">{</span> <span class="py">version</span> <span class="p">=</span> <span class="s">"0.15.1"</span><span class="p">,</span> <span class="py">features</span> <span class="p">=</span> <span class="p">[</span><span class="s">"stm32f303"</span><span class="p">]</span> <span class="p">}</span>
+<span class="py">cortex-m</span> <span class="p">=</span> <span class="s">"0.7.0"</span>
+<span class="py">cortex-m-rt</span> <span class="p">=</span> <span class="s">"0.7.3"</span>
+<span class="py">cortex-m-semihosting</span> <span class="p">=</span> <span class="s">"0.5.0"</span>
+<span class="py">panic-halt</span> <span class="p">=</span> <span class="s">"0.2.0"</span>
+</code></pre></div></div>
+
+<p>Nothing special here. In the <em>Cargo.toml</em> file we define the dependencies we need. See more keys and their definitions at <a href="https://doc.rust-lang.org/cargo/reference/manifest.html" target="\_blank" rel="noopener noreferrer">doc.rust-lang.org</a>.</p>
+
+<p><strong>memory.x</strong></p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>MEMORY
+{
+  FLASH : ORIGIN = 0x08000000, LENGTH = 256K
+  RAM : ORIGIN = 0x20000000, LENGTH = 40K
+  CCRAM : ORIGIN = 0x10000000, LENGTH = 8K
+}
+</code></pre></div></div>
+
+<p>As already mentioned under the <strong>.cargo/cargo.toml</strong> file, we need to provide a <strong>memory.x</strong> file for the linker. Here we define the exact memory layout for our microcontroller. But where can we find those addresses and sizes? For that we have to look at the <a href="https://www.st.com/resource/en/reference_manual/rm0316-stm32f303xbcde-stm32f303x68-stm32f328x8-stm32f358xc-stm32f398xe-advanced-armbased-mcus-stmicroelectronics.pdf" target="\_blank" rel="noopener noreferrer">Reference Manual</a>. For the RAM we can find the address and length under <strong>3.2.2 Memory map and register boundary addresses</strong> on page 56. Same for the CCRAM. There is documented that the RAM (SRAM) starts at <em>0x20000000</em> and is <em>40 K</em> in size. CCRAM (CCS SRAM) starts at <em>0x10000000</em> and is <em>8 K</em> in size. On the next page, 57, we can find the start address for the main flash memory, FLASH, which starts at <em>0x08000000</em> and is <em>256 K</em> in size.</p>
+
+<p><img src="/assets/images/posts/re-setup-part-1/stm32f3_reference_manual_ram.png" alt="Memory layout of the reference manual" />
+<em>STM32F3 Reference Manual p. 56</em></p>
+
+<p><strong>openocd.gdb</strong></p>
+
+<p><em>Mostly taken from here <a href="https://docs.rust-embedded.org/discovery/f3discovery/05-led-roulette/the-challenge.html" target="\_blank" rel="noopener noreferrer">https://docs.rust-embedded.org/discovery/f3discovery/05-led-roulette/the-challenge.html</a></em></p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>target extended-remote :3333
+
+# print demangled symbols
+set print asm-demangle on
+
+# set backtrace limit to not have infinite backtrace loops
+set backtrace limit 32
+
+# detect unhandled exceptions, hard faults and panics
+break DefaultHandler
+break HardFault
+break rust_begin_unwind
+
+# *try* to stop at the user entry point (it might be gone due to inlining)
+break main
+
+# enable semihosting to see output from hprintln!("...")
+monitor arm semihosting enable
+
+# flash the program into the microcontroller
+load
+
+# start the process but immediately halt the processor
+stepi
+</code></pre></div></div>
+
+<p>The <em>openocd.gdb</em> file contains some statements for the gdb server so that we don’t have to type them everytime we run <code class="language-plaintext highlighter-rouge">cargo run</code>. First we need to connect to the the running OpenOCD’s GDB server which listens on port 3333 (see output in <a href="/2024/06/03/rust-embedded-setup-part-0">Part 0</a>). Flashing the program into the microcontroller is actually done by the <code class="language-plaintext highlighter-rouge">load</code> command. This file is used by the runner in the <em>.cargo/config.toml</em> file.</p>
+
+<p>You should now have a base project setup ready to be tried out on your discovery board. This would be your next steps:</p>
+
+<ul>
+  <li>Connect your board via USB to your PC</li>
+  <li>Open a terminal and start OpenOCD with <code class="language-plaintext highlighter-rouge">openocd -f board/stm32f3discovery.cfg</code></li>
+  <li>Open another terminal, cd into this project <code class="language-plaintext highlighter-rouge">cd /path/to/basic_led_on</code> and run <code class="language-plaintext highlighter-rouge">cargo run</code> - this opens a gdb session</li>
+  <li>The red LED on you board should not light up</li>
+  <li>In the gdb session type <code class="language-plaintext highlighter-rouge">continue</code> and hit Enter - you should be halted at the <em>main</em> breakpoint</li>
+  <li>Again, type <code class="language-plaintext highlighter-rouge">continue</code> and hit Enter - the LED should now light up</li>
+  <li>Ctrl+C for exiting and then <code class="language-plaintext highlighter-rouge">quit</code> + Enter (in the OpenOCD terminal also, Ctrl+C)</li>
+</ul>
+
+<p>In my terminal the output looks like that:</p>
+
+<p><img src="/assets/images/posts/re-setup-part-1/stm32f3_discovery_flash_output.png" alt="Screenshot of terminal output" /></p>
+
+<p>For a more in-depth guide on how to debug and use GDB check out the <a href="https://docs.rust-embedded.org/discovery/f3discovery/05-led-roulette/debug-it.html" target="\_blank" rel="noopener noreferrer">Rust Embedded Discovery Book</a></p>
+
+</article>
+
+    </main>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.1/highlight.min.js"></script>
+    <script>
+      hljs.highlightAll()
+    </script>
+  </body>
+</html>

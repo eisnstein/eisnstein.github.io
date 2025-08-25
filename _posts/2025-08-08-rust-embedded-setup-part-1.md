@@ -6,7 +6,7 @@ title: "Rust Embedded: Setup - Part 1"
 description: Setup for programming the ST Discovery Board 3 with Rust on Windows 10
 ---
 
-If you have followed Part 0 of the setup, you are ready to build and flash your first program to the board. For now it is not about the code itself, but how to get it running on the microcontroller. The setup for a very simple program that will light up an on-board LED looks as follows.
+If you have followed [Part 0]({% post_url 2024-06-03-rust-embedded-setup-part-0 %}) of the setup, you are ready to build and flash your first program to the board. For now it is not about the code itself, but how to get it running on the microcontroller. The setup for a very simple program that will light up an on-board LED looks as follows.
 
 _This post was written with the help of ChatGPT. By that I mean, that I let proof read ChatGPT parts of the text, and, in case, used optimizations that ChatGPT offered._
 
@@ -135,10 +135,12 @@ MEMORY
 
 As already mentioned under the **.cargo/cargo.toml** file, we need to provide a **memory.x** file for the linker. Here we define the exact memory layout for our microcontroller. But where can we find those addresses and sizes? For that we have to look at the [Reference Manual](https://www.st.com/resource/en/reference_manual/rm0316-stm32f303xbcde-stm32f303x68-stm32f328x8-stm32f358xc-stm32f398xe-advanced-armbased-mcus-stmicroelectronics.pdf){:target="\_blank" rel="noopener noreferrer"}. For the RAM we can find the address and length under **3.2.2 Memory map and register boundary addresses** on page 56. Same for the CCRAM. There is documented that the RAM (SRAM) starts at _0x20000000_ and is _40 K_ in size. CCRAM (CCS SRAM) starts at _0x10000000_ and is _8 K_ in size. On the next page, 57, we can find the start address for the main flash memory, FLASH, which starts at _0x08000000_ and is _256 K_ in size.
 
-![RAM layout of the reference manual](/assets/images/posts/re-setup-part-1/stm32f3_reference_manual_ram.png)
+![Memory layout of the reference manual](/assets/images/posts/re-setup-part-1/stm32f3_reference_manual_ram.png)
 *STM32F3 Reference Manual p. 56*
 
 **openocd.gdb**
+
+_Mostly taken from here [https://docs.rust-embedded.org/discovery/f3discovery/05-led-roulette/the-challenge.html](https://docs.rust-embedded.org/discovery/f3discovery/05-led-roulette/the-challenge.html){:target="\_blank" rel="noopener noreferrer"}_
 
 ```
 target extended-remote :3333
@@ -157,10 +159,30 @@ break rust_begin_unwind
 # *try* to stop at the user entry point (it might be gone due to inlining)
 break main
 
+# enable semihosting to see output from hprintln!("...")
 monitor arm semihosting enable
 
+# flash the program into the microcontroller
 load
 
 # start the process but immediately halt the processor
 stepi
 ```
+
+The _openocd.gdb_ file contains some statements for the gdb server so that we don't have to type them everytime we run `cargo run`. First we need to connect to the the running OpenOCD's GDB server which listens on port 3333 (see output in [Part 0]({% post_url 2024-06-03-rust-embedded-setup-part-0 %})). Flashing the program into the microcontroller is actually done by the `load` command. This file is used by the runner in the _.cargo/config.toml_ file.
+
+You should now have a base project setup ready to be tried out on your discovery board. This would be your next steps:
+
+* Connect your board via USB to your PC
+* Open a terminal and start OpenOCD with `openocd -f board/stm32f3discovery.cfg`
+* Open another terminal, cd into this project `cd /path/to/basic_led_on` and run `cargo run` - this opens a gdb session
+* The red LED on you board should not light up
+* In the gdb session type `continue` and hit Enter - you should be halted at the _main_ breakpoint
+* Again, type `continue` and hit Enter - the LED should now light up
+* Ctrl+C for exiting and then `quit` + Enter (in the OpenOCD terminal also, Ctrl+C)
+
+In my terminal the output looks like that:
+
+![Screenshot of terminal output](/assets/images/posts/re-setup-part-1/stm32f3_discovery_flash_output.png)
+
+For a more in-depth guide on how to debug and use GDB check out the [Rust Embedded Discovery Book](https://docs.rust-embedded.org/discovery/f3discovery/05-led-roulette/debug-it.html){:target="\_blank" rel="noopener noreferrer"}
