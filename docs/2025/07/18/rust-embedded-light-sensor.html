@@ -99,7 +99,20 @@
     >
     
   </div>
-  <p>I wanted build a little project where i could use the ADC of the STM32F303VC microcontroller. I came up with the idea to read values from a light sensor. So the light sensor is connected to the microcontroller via pin 0 of port A. We need to convert the voltage on this pin to digital values. That is where the ADC comes in - we convert from <em>analog</em> to <em>digital</em>.</p>
+  <p>I wanted to build a little project where I could use the ADC of the STM32F303VC microcontroller. I came up with the idea to read values from a light sensor. So the light sensor is connected to the microcontroller via pin 0 of port A. We need to convert the voltage on this pin to digital values. That is where the ADC comes in - we convert from <em>analog</em> to <em>digital</em>.</p>
+
+<p>Here is how I set it up:</p>
+
+<p><img src="/assets/images/posts/re-light-sensor-part-1/board_light_sensor_sm.jpg" alt="Board setup with light sensor" />
+<em>Board setup with light sensor</em></p>
+
+<ol>
+  <li>connect the white cable to the <strong>GND</strong> pin on the board -&gt; to the vertical <strong>-</strong> lane on the breadboard</li>
+  <li>connect the blue cable to the <strong>5V</strong> pin on the board -&gt; to the vertical <strong>+</strong> lane on the breadboard</li>
+  <li>connect the red cable to the <strong>PA0</strong> pin on the board -&gt; to the horizontal lane where the light sensor and the resistor are connected</li>
+  <li>connect the light sensor via the blue connector on one side to the <strong>+</strong> lane -&gt; the oder side via the resistor to the <strong>-</strong> lane</li>
+  <li>connect the resistor (10k Ohm) to the <strong>-</strong> lane</li>
+</ol>
 
 <p>Code on <a href="https://github.com/eisnstein/rust-embedded-light-sensor/blob/main" target="\_blank" rel="noopener noreferrer">GitHub</a>.</p>
 
