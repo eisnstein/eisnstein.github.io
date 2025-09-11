@@ -6,7 +6,18 @@ title: "Rust Embedded: Light Sensor - Part 1"
 description: Reading values continuously from a light sensor.
 ---
 
-I wanted build a little project where i could use the ADC of the STM32F303VC microcontroller. I came up with the idea to read values from a light sensor. So the light sensor is connected to the microcontroller via pin 0 of port A. We need to convert the voltage on this pin to digital values. That is where the ADC comes in - we convert from _analog_ to _digital_.
+I wanted to build a little project where I could use the ADC of the STM32F303VC microcontroller. I came up with the idea to read values from a light sensor. So the light sensor is connected to the microcontroller via pin 0 of port A. We need to convert the voltage on this pin to digital values. That is where the ADC comes in - we convert from _analog_ to _digital_.
+
+Here is how I set it up:
+
+![Board setup with light sensor](/assets/images/posts/re-light-sensor-part-1/board_light_sensor_sm.jpg)
+*Board setup with light sensor*
+
+1. connect the white cable to the **GND** pin on the board -> to the vertical **-** lane on the breadboard
+2. connect the blue cable to the **5V** pin on the board -> to the vertical **+** lane on the breadboard
+3. connect the red cable to the **PA0** pin on the board -> to the horizontal lane where the light sensor and the resistor are connected
+4. connect the light sensor via the blue connector on one side to the **+** lane -> the oder side via the resistor to the **-** lane
+5. connect the resistor (10k Ohm) to the **-** lane
 
 Code on [GitHub](https://github.com/eisnstein/rust-embedded-light-sensor/blob/main){:target="\_blank" rel="noopener noreferrer"}.
 
