@@ -206,3 +206,4 @@ loop {
 
 Now we can start our loop and read data from our input pin. Of course a light sensor needs to be attached to our microcontroller. If you flash the program and everything is setup correctly, you should see the numbers in your terminal output change if the light over the sensor changes. Eg. if you hold your hand above or an light source - so going from dark to light.
 
+On to Part 2 -> [Rust Embedded: Light Sensor - Part 2]({% post_url 2025-09-14-rust-embedded-light-sensor-part-2 %})
