@@ -24,6 +24,7 @@ permalink: /:categories/:year/:month/:day/:title
 plugins:
   - jekyll-postcss-v2
   - jekyll-seo-tag
+  - jekyll-sitemap
 
 postcss:
   cache: false

@@ -1,7 +1,7 @@
 {
   "scripts": {
-    "dev": "jekyll serve --livereload",
-    "build": "jekyll build -d docs"
+    "dev": "bundle exec jekyll serve --livereload",
+    "build": "JEKYLL_ENV=production bundle exec jekyll build"
   },
   "devDependencies": {
     "@tailwindcss/typography": "^0.5.16",

@@ -1,3 +1,3 @@
 #!/bin/bash
 
-JEKYLL_ENV=production jekyll build --destination=docs
+JEKYLL_ENV=production bundle exec jekyll build
